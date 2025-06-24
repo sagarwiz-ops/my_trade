@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "731753136477",
+    "firebase_url": "https://mytrade-73147-default-rtdb.firebaseio.com",
+    "project_id": "mytrade-73147",
+    "storage_bucket": "mytrade-73147.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:731753136477:android:81c217f53dc8158f9d68b4",
+        "android_client_info": {
+          "package_name": "com.icelabs.my_trade"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "731753136477-ql8tjhcjp6d1r1pfb6blucgd6cb7h0un.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.icelabs.my_trade",
+            "certificate_hash": "8e553a80941b88ac19f5bb3b482aa79c3aff1f18"
+          }
+        },
+        {
+          "client_id": "731753136477-a0hcivpkdih6iatvpn43e0qo3tseo6md.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7K7_I-SfOHQ5Ntd5j9BUzAeY9iNL2Z30"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "731753136477-a0hcivpkdih6iatvpn43e0qo3tseo6md.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
