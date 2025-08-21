@@ -1,4 +1,3 @@
-import 'dart:ffi';
 import 'dart:io';
 
 import 'package:firebase_database/firebase_database.dart';
@@ -24,7 +23,7 @@ class CreateProfile extends StatefulWidget {
 }
 
 class _CreateProfileState extends State<CreateProfile> {
-  bool selectedTraderType = false;
+  bool hasSelectedTraderType = false;
   bool isRetailer = false;
   final ImagePicker _imagePicker = ImagePicker();
   TextEditingController _nameOfTheShopController = TextEditingController();
@@ -57,7 +56,7 @@ class _CreateProfileState extends State<CreateProfile> {
         .size
         .height;
 
-    return selectedTraderType
+    return hasSelectedTraderType
         ? createTrader()
         : selectTraderType(screenHeight, screenWidth);
   }
@@ -65,6 +64,7 @@ class _CreateProfileState extends State<CreateProfile> {
   Widget selectTraderType(double screenHeight, double screenWidth) {
     return Scaffold(
         appBar: AppBar(
+          // automaticallyImplyLeading: false,
           title: Text(
             "Create Profile",
             style: TextStyle(
@@ -93,7 +93,7 @@ class _CreateProfileState extends State<CreateProfile> {
                         InkWell(
                           onTap: () {
                             setState(() {
-                              selectedTraderType = true;
+                              hasSelectedTraderType = true;
                               isRetailer = false;
                             });
                           },
@@ -112,7 +112,7 @@ class _CreateProfileState extends State<CreateProfile> {
                         InkWell(
                           onTap: () {
                             setState(() {
-                              selectedTraderType = true;
+                              hasSelectedTraderType = true;
                               isRetailer = true;
                             });
                           },
@@ -139,13 +139,23 @@ class _CreateProfileState extends State<CreateProfile> {
               fontWeight: FontWeight.bold, color: AppColors.lightGray),
         ),
         centerTitle: true,
+        leading: IconButton(onPressed: (){
+          if(hasSelectedTraderType){
+            setState(() {
+              hasSelectedTraderType = false;
+              isRetailer = false;
+            });
+          }
+        }, icon: Icon(Icons.arrow_back_ios, color: AppColors.lightGray,)),
         actions: [
           IconButton(
               onPressed: () async {
 
                 if (_nameOfTheShopController.text.isNotEmpty &&
                     _nameOfTheOwnerController.text.isNotEmpty) {
-
+                  if(!isRetailer){
+                    Constants.traderCreatedForTheFirstTime = true;
+                  }
 
                   await MyFirebase.setUserProfile(UserProfile(
                       nameOfTheOwner: _nameOfTheOwnerController.text,
@@ -164,11 +174,11 @@ class _CreateProfileState extends State<CreateProfile> {
                   }
 
                   // to check if the user is a distributor
-                  await MyFirebase.getMyProfileDetails();
+                  await MyFirebase.getMyProfileDetails(false);
 
                   await MyFirebase.updateShopImageUrl(_profileImageUrl);
 
-                  await MyFirebase.setUserIdForProductCount();
+
 
                   // dismiss spinkit
                   Navigator.pop(context);
@@ -198,6 +208,7 @@ class _CreateProfileState extends State<CreateProfile> {
                 children: [
                   Stack(children: [
                     ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
                       child: Container(
                         height: 200,
                         width: 200,

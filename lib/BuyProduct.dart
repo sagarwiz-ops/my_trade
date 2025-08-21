@@ -1,4 +1,4 @@
-import 'dart:ffi';
+
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:my_trade/Utils/AppColors.dart';
 import 'package:my_trade/UpdateInventory.dart';
 import 'package:my_trade/Utils/CustomCacheManager.dart';
+import 'package:my_trade/main.dart';
+import 'package:my_trade/showMyOrders.dart';
 
 import 'Firebase/MyFirebase.dart';
 import 'Utils/Constants.dart';
@@ -51,6 +53,7 @@ class _BuyProductState extends State<BuyProduct> {
   }
 
   void _initialize() {
+    numberOfProductsAdded = aboutUser.getInt(Constants.stringTotalNumberOfOrders) ?? 0;
     getProductVariants();
     widget.dropDownLists.forEach((key, value) {
       if (value is String) {
@@ -95,6 +98,8 @@ class _BuyProductState extends State<BuyProduct> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
+    _gResponsiveFontSize = Constants.baseFontSize * (screenWidth / 375);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.steelBlue,
@@ -136,6 +141,7 @@ class _BuyProductState extends State<BuyProduct> {
                               width: 100,
                             ))
                         : ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
                             child: Image.asset(
                               'assets/images/no_image.png',
                               height: 100,
@@ -144,6 +150,7 @@ class _BuyProductState extends State<BuyProduct> {
                             ),
                           )
                     : ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
                         child: Image.asset(
                           'assets/images/no_image.png',
                           height: 100,
@@ -173,8 +180,14 @@ class _BuyProductState extends State<BuyProduct> {
                     ),
                     Row(
                       children: [
-                        Text("Available Quantity:", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.charcoal)),
-                        Text(productQuantity, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.charcoal))
+                        Text("Available Quantity:",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.charcoal)),
+                        Text(productQuantity,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.charcoal))
                       ],
                     ),
                   ],
@@ -210,6 +223,7 @@ class _BuyProductState extends State<BuyProduct> {
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                       suffixIcon: IconButton(
+                          // check icon for buying a product
                           onPressed: () async {
                             addedProduct.addAll({
                               matchedVariantKey: _productQuantityController.text
@@ -220,7 +234,6 @@ class _BuyProductState extends State<BuyProduct> {
                                 !_productQuantityController.text
                                     .contains('.') &&
                                 _productQuantityController.text.isNotEmpty) {
-                              Constants.showAToast("Order Placed", context);
                               if (await MyFirebase
                                   .checkAvailableQuantityAndSetOrderAccordingly(
                                       widget.productName,
@@ -233,10 +246,17 @@ class _BuyProductState extends State<BuyProduct> {
                                     widget.distributorUserId,
                                     addedProduct,
                                     widget.productName);
-                                addedProduct.addAll({
-                                  matchedVariantKey:
-                                      _productQuantityController.text
+                                var tno = aboutUser.getInt(Constants.stringTotalNumberOfOrders);
+                                aboutUser.setInt(Constants.stringTotalNumberOfOrders, tno ?? 0+1);
+                                Constants.showAToast("Order Placed", context);
+                                setState(() {
+                                  numberOfProductsAdded++;
+                                  addedProduct.clear();
                                 });
+                                // addedProduct.addAll({
+                                //   matchedVariantKey:
+                                //       _productQuantityController.text
+                                // });
                                 var aac = int.parse(productQuantity);
                                 setState(() {
                                   productQuantity = (aac -= int.parse(
@@ -250,7 +270,10 @@ class _BuyProductState extends State<BuyProduct> {
                             Icons.done_outline,
                             color: AppColors.charcoal,
                           )),
-                      label: Text("Enter Product Quantity", style: TextStyle(color: AppColors.charcoal),),
+                      label: Text(
+                        "Enter Product Quantity",
+                        style: TextStyle(color: AppColors.charcoal),
+                      ),
                       border: OutlineInputBorder(),
                       focusedBorder: OutlineInputBorder(
                           borderSide:
@@ -259,6 +282,24 @@ class _BuyProductState extends State<BuyProduct> {
                           borderSide: BorderSide(color: AppColors.charcoal))),
                 ),
               ),
+              Stack(
+                children: [
+                  IconButton(
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => ShowMyOrders(widget.distributorUserId, "")));
+                      },
+                      icon: Icon(
+                        Icons.shopping_cart,
+                        color: AppColors.charcoal,
+                        size: 40,
+                      )),
+                  Positioned(
+                      right: 4,
+                      top: 4,
+                      child: Text("$numberOfProductsAdded")),
+                ],
+              )
+
             ]),
             SizedBox(
               height: 10,

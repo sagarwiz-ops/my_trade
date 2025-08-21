@@ -9,13 +9,22 @@ import 'package:my_trade/Utils/Constants.dart';
 import 'package:my_trade/MyNetwork.dart';
 import 'package:my_trade/CreateProfile.dart';
 import 'package:my_trade/Auth/Login.dart';
+import 'package:my_trade/ValidationScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'BLOC/DataBloc.dart';
 import 'Home.dart';
 
+late SharedPreferences aboutUser;
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  aboutUser = await  SharedPreferences.getInstance();
   await Firebase.initializeApp();
+
+
+  // enable offline persistence for Firebase Realtime Database
+  FirebaseDatabase.instance.setPersistenceEnabled(true);
 
 
   FirebaseDatabase.instance.setLoggingEnabled(true);
@@ -48,7 +57,7 @@ final isLoggedIn;
             colorScheme: ColorScheme.fromSeed(seedColor: AppColors.lightGray),
             useMaterial3: true,
           ),
-          home: isLoggedIn ? Home() : Login()
+          home: ValidationScreen()
       ),
     );
   }

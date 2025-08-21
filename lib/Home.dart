@@ -11,11 +11,9 @@ import 'package:my_trade/BLOC/DataBloc.dart';
 import 'package:my_trade/BLOC/DataEvent.dart';
 import 'package:my_trade/Utils/Constants.dart';
 import 'package:my_trade/Firebase/MyFirebase.dart';
-import 'package:my_trade/FollowRequests.dart';
 import 'package:my_trade/MyNetwork.dart';
-import 'package:my_trade/CreateProfile.dart';
-import 'package:my_trade/ManageStock.dart';
 import 'package:my_trade/Utils/CustomCacheManager.dart';
+import 'package:my_trade/main.dart';
 import 'package:my_trade/showMyOrders.dart';
 import 'package:my_trade/SideMenu.dart';
 
@@ -27,6 +25,7 @@ class Home extends StatefulWidget {
 }
 
 bool isLoading = true;
+double _gResponsiveFontSize = 0.0;
 
 class _HomeState extends State<Home> {
 
@@ -50,13 +49,27 @@ class _HomeState extends State<Home> {
 
   initialSetUp() async {
 
+    // WidgetsBinding.instance.addPostFrameCallback((_) async {
+    //  Constants.requestContactsWithDialog(context);
+    // })
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-     Constants.requestContactsWithDialog(context);
-    });
+    aboutUser.setBool("isManager", false);
 
-    await MyFirebase.getMyUserId();
-    await MyFirebase.getMyProfileDetails();
+    bool? isManager = aboutUser.getBool("isManager");
+    if(isManager != null && isManager){
+      Constants.isManager = true;
+      Constants.myUserId = aboutUser.getString(Constants.sharedPrefStringDistributorsUserIdForManager ?? "")!;
+      await MyFirebase.getMyProfileDetails(true);
+    }else{
+      await MyFirebase.getMyUserId();
+      await MyFirebase.getMyProfileDetails(false);
+      if(Constants.traderCreatedForTheFirstTime){
+        Constants.traderCreatedForTheFirstTime = false;
+        await MyFirebase.setUserIdForProductCount();
+
+      }
+    }
+
 
       context.read<DataBloc>().add(FetchData(Constants.blocStringGetOrders, Constants.myUserId));
 
@@ -78,7 +91,7 @@ class _HomeState extends State<Home> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
-    Constants.gResponsiveFontSize = Constants.baseFontSize * (screenWidth / 375);
+  _gResponsiveFontSize = Constants.baseFontSize * (screenWidth / 375);
 
     return isLoading
         ? Scaffold(
@@ -117,7 +130,7 @@ class _HomeState extends State<Home> {
                               .add(FetchData(Constants.blocStringGetAllRetailers, null))
                           : context
                               .read<DataBloc>()
-                              .add(FetchData(Constants.blocStringGetAllRetailers, null));
+                              .add(FetchData(Constants.blocStringGetAllDistributors, null));
                       Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -155,14 +168,16 @@ class _HomeState extends State<Home> {
                               ),
                               elevation: 10,
                               color: AppColors.steelBlue,
-                              child: Column(
-                                children: [
-                                  Text("Total Sales", style: TextStyle(color: AppColors.lightGray, fontWeight: FontWeight.bold, fontSize: 18),),
-                                  SizedBox(height: 10,),
-                                  Text("This Month So Far : 250000", style : TextStyle(color: AppColors.lightGray, fontWeight: FontWeight.bold, fontSize: 18)),
-                                  SizedBox(height: 10,),
-                                  Text("20% more than previous month", style : TextStyle(color: AppColors.lightGray, fontWeight: FontWeight.bold, fontSize: 18))
-                                ],
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  children: [
+                                    Text("Total Sales", style: TextStyle(color: AppColors.lightGray, fontWeight: FontWeight.bold, fontSize: 18),),
+                                    SizedBox(height: 10,),
+                                    Text("This Month So Far : 250000", style : TextStyle(color: AppColors.lightGray, fontWeight: FontWeight.bold, fontSize: 18)),
+                                    SizedBox(height: 10,),
+                                    Text("20% more than previous month", style : TextStyle(color: AppColors.lightGray, fontWeight: FontWeight.bold, fontSize: 18))
+                                  ],
+                                ),
                               ),
                             ),
                           )
@@ -194,7 +209,16 @@ class _HomeState extends State<Home> {
     print("Home Orders up is ${up}");
     bool dataIsNull = up!.isEmpty;
    return dataIsNull ?  Container(
-      child: Center(child: Text("No Data"),),
+      child: Center(child: Card(
+        shadowColor: AppColors.greyMedium.withOpacity(0.7),
+        margin: EdgeInsets.all(6),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8)
+        ),
+        elevation: 10,
+        color: AppColors.greyMedium.withOpacity(0.4),
+        child: Text("No Orders", style: TextStyle(color: AppColors.charcoal, fontWeight: FontWeight.bold),),
+      ),),
     ):
      Container(
       margin: EdgeInsets.all(8),
@@ -207,79 +231,87 @@ class _HomeState extends State<Home> {
         elevation: 10,
         color: AppColors.greyMedium.withOpacity(0.4),
         child:
-        ListView.builder(
-            itemCount: up.length,
-            itemBuilder: (context, index){
-              return InkWell(
-                onTap: (){
-
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => ShowMyOrders(up[index].userId ?? "")));
-                },
-                child: Container(
-                    margin: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: AppColors.primary.withOpacity(0.7)
-
-                    ),
-                    padding: EdgeInsets.all(10),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                            child:
-                            up[index].profileImageUrl != null ?
-                                up[index].profileImageUrl!.isNotEmpty ?
-                                    Image(height:80 ,width:80, image: CachedNetworkImageProvider(up[index].profileImageUrl!, cacheManager: CustomCacheManager()), fit: BoxFit.cover,)
-                                :
-                        Image.asset('assets/images/no_image.png', height: 80, width: 80,)
-                                :
-                        Image.asset('assets/images/no_image.png', height: 80, width: 80,)
-
-                        ),
-                        SizedBox(width: 15,),
-                        Expanded(child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-
-                            SizedBox(width: 15),
-                            Text(up[index].nameOfTheShop ?? "", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.lightGray, fontSize: 18),),
-                            SizedBox(height: 1.5,),
-                            Text(up[index].nameOfTheOwner ?? "", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.lightGray, fontSize: 18),),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                IconButton(onPressed: (){
-                                       up[index].phoneNumber != null ?
-                                  up[index].phoneNumber!.isNotEmpty ?
-                                  Constants.makePhoneCall(up[index].phoneNumber!)
-                                      :Constants.showAToast("No Phone Number", context)
-                                      :Constants.showAToast("No Phone Number", context);
-
-                                }, icon: Icon(Icons.call, color: AppColors.charcoal,)),
-                                InkWell(
-                                  onTap:(){
+        Column(
+          children: [
+            Text("Orders", style: TextStyle(color: AppColors.charcoal, fontWeight: FontWeight.bold, fontSize: _gResponsiveFontSize),),
+            SizedBox(height: 10,),
+            Expanded(
+              child: ListView.builder(
+                  itemCount: up.length,
+                  itemBuilder: (context, index){
+                    return InkWell(
+                      onTap: (){
+                      
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => ShowMyOrders(up[index].userId ?? "", up[index].nameOfTheShop ?? "")));
+                      },
+                      child: Container(
+                          margin: EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: AppColors.primary.withOpacity(0.7)
+                      
+                          ),
+                          padding: EdgeInsets.all(10),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child:
+                                  up[index].profileImageUrl != null ?
+                                  up[index].profileImageUrl!.isNotEmpty ?
+                                  Image(height:80 ,width:80, image: CachedNetworkImageProvider(up[index].profileImageUrl!, cacheManager: CustomCacheManager()), fit: BoxFit.cover,)
+                                      :
+                                  Image.asset('assets/images/no_image.png', height: 80, width: 80,)
+                                      :
+                                  Image.asset('assets/images/no_image.png', height: 80, width: 80,)
+                      
+                              ),
+                              SizedBox(width: 15,),
+                              Expanded(child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                      
+                                  SizedBox(width: 15),
+                                  Text(up[index].nameOfTheShop ?? "", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.lightGray, fontSize: 18),),
+                                  SizedBox(height: 1.5,),
+                                  Text(up[index].nameOfTheOwner ?? "", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.lightGray, fontSize: 18),),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      IconButton(onPressed: (){
                                         up[index].phoneNumber != null ?
-                                    up[index].phoneNumber!.isNotEmpty ?
-                                    Constants.launchWhatsApp(up[index].phoneNumber!, "Hello")
-                                        :Constants.showAToast("No Phone Number", context)
-                                        :Constants.showAToast("No Phone Number", context);
-                                  },
-                                  child: FaIcon(
-                                    FontAwesomeIcons.whatsapp,
-                                    color: AppColors.whatsAppGreen,
-                                  ),
-                                ),
-                              ],
-                            )
-                          ],
-                        ))
-                      ],
-                    )
-                ),
-              );
-            }),
+                                        up[index].phoneNumber!.isNotEmpty ?
+                                        Constants.makePhoneCall(up[index].phoneNumber!)
+                                            :Constants.showAToast("No Phone Number", context)
+                                            :Constants.showAToast("No Phone Number", context);
+                      
+                                      }, icon: Icon(Icons.call, color: AppColors.charcoal,)),
+                                      InkWell(
+                                        onTap:(){
+                                          up[index].phoneNumber != null ?
+                                          up[index].phoneNumber!.isNotEmpty ?
+                                          Constants.launchWhatsApp(up[index].phoneNumber!, "Hello")
+                                              :Constants.showAToast("No Phone Number", context)
+                                              :Constants.showAToast("No Phone Number", context);
+                                        },
+                                        child: FaIcon(
+                                          FontAwesomeIcons.whatsapp,
+                                          color: AppColors.whatsAppGreen,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ))
+                            ],
+                          )
+                      ),
+                    );
+                  }),
+            ),
+          ],
+        )
       ),
     );
   }

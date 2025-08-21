@@ -14,15 +14,17 @@ class ShowProducts extends StatefulWidget {
   String distributorName;
   String userId;
 
+
   ShowProducts(this.distributorName, this.userId);
 
   @override
   State<ShowProducts> createState() => _ShowProductsState();
 }
 
+double _gResponsiveFontSize = 0.0;
+
 class _ShowProductsState extends State<ShowProducts> {
   TextEditingController _searchController = TextEditingController();
-  double _gResponsiveFontSize = 0;
   int numberOfSearchedStocksTypeAvailable = 0;
   List<dynamic> productNames = [];
   List<dynamic> searchedProducts = [];
@@ -39,7 +41,7 @@ class _ShowProductsState extends State<ShowProducts> {
   }
 
   _initialize(){
-    context.read<DataBloc>().add(FetchData("getMyProducts", widget.userId));
+    context.read<DataBloc>().add(FetchData(Constants.blocStringGetMyProducts, widget.userId));
   }
 
   void searchProducts(){
@@ -51,6 +53,8 @@ class _ShowProductsState extends State<ShowProducts> {
     // get the screen width and height
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
+
+    _gResponsiveFontSize = Constants.baseFontSize * (screenWidth / 375);
 
 
     return Scaffold(
@@ -66,11 +70,14 @@ class _ShowProductsState extends State<ShowProducts> {
         centerTitle: true,
         backgroundColor: AppColors.steelBlue,
       ),
-      body: SafeArea(child: Column(children: [
-        Container(
+      body: SafeArea(
+          child:
+          Column(children: [
+                  Container(
             padding: EdgeInsets.all(0),
             margin: EdgeInsets.only(bottom: 10, top: 10, left: 15, right: 15),
             width: double.infinity,
+
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
                 color: AppColors.white,
@@ -97,7 +104,7 @@ class _ShowProductsState extends State<ShowProducts> {
                         fontFamily: 'Roboto',
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
-                        fontSize: _gResponsiveFontSize - 2),
+                        fontSize:  16),
                   ),
                 ),
                 Align(
@@ -108,18 +115,18 @@ class _ShowProductsState extends State<ShowProducts> {
                       "$numberOfSearchedStocksTypeAvailable",
                       style: TextStyle(
                           fontFamily: 'Roboto',
-                          fontSize: _gResponsiveFontSize - 2),
+                          fontSize:  _gResponsiveFontSize - 2),
                     ),
                   ),
                 )
               ],
             )),
-        SizedBox(
+                  SizedBox(
           height: 10,
-        ),
-        Expanded(
+                  ),
+                  Expanded(
           child: BlocBuilder<DataBloc, DataState>(builder: (context, state){
-            if(state.dataStatus == DataStatus.success){
+            if(state.dataStatus == DataStatus.success && state.title == Constants.blocStringGetMyProducts){
               return showProducts(state.productDataMap);
             }else{
               return Center(
@@ -127,8 +134,8 @@ class _ShowProductsState extends State<ShowProducts> {
               );
             }
           }),
-        )
-      ],)),
+                  )
+                ],)),
     );
   }
 
@@ -143,6 +150,7 @@ class _ShowProductsState extends State<ShowProducts> {
     }
     return DataIsNull
         ? Container(
+      height: double.infinity,
       child: Center(
         child: Text("No Products"),
       ),
@@ -166,44 +174,43 @@ class _ShowProductsState extends State<ShowProducts> {
                         )));
               },
               child: Container(
+                height: 100,
                 margin: EdgeInsets.all(8),
                 padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
                     border: Border.all(color: AppColors.greyMedium.withOpacity(0.8), width: 2.5),
                     color: AppColors.steelBlue.withOpacity(0.75),
                     borderRadius: BorderRadius.circular(10)),
-                child: Expanded(
-                  child: Row(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child:   getImage(searchIsEmpty ? map[productNames[index]] : map[searchedProducts[index]]).isNotEmpty
-                            ? Image.network(
-                          searchIsEmpty ? getImage(map[productNames[index]]) : getImage(map[searchedProducts[index]]),
-                          width: 80,
-                          height: 80,
-                          fit: BoxFit.cover,
-                        )
-                            : Image.asset(
-                          'assets/images/no_image.png',
-                          width: 80,
-                          height: 80,
-                          fit: BoxFit.cover,
-                        ),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child:   getImage(searchIsEmpty ? map[productNames[index]] : map[searchedProducts[index]]).isNotEmpty
+                          ? Image.network(
+                        searchIsEmpty ? getImage(map[productNames[index]]) : getImage(map[searchedProducts[index]]),
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                      )
+                          : Image.asset(
+                        'assets/images/no_image.png',
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
                       ),
-                      SizedBox(
-                        width: 25,
-                      ),
-                      Text(
-                        searchIsEmpty ? productNames[index] : searchedProducts[index],
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.lightGray,
-                            fontSize: 24),
-                      ),
-                    ],
-                  ),
+                    ),
+                    SizedBox(
+                      width: 25,
+                    ),
+                    Text(
+                      searchIsEmpty ? productNames[index] : searchedProducts[index],
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.lightGray,
+                          fontSize: 24),
+                    ),
+                  ],
                 ),
               ),
             );

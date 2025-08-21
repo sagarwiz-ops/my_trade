@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:my_trade/Home.dart';
 import 'package:my_trade/Utils/AppColors.dart';
 import 'package:my_trade/BLOC/DataBloc.dart';
 import 'package:my_trade/BLOC/DataState.dart';
@@ -27,6 +28,7 @@ class _ManageStockState extends State<ManageStock> {
   List<dynamic> searchedProducts = [];
   bool searchIsEmpty = false;
   int numberOfSearchedStocksTypeAvailable = 0;
+  double _gResponsiveFontSize = 0;
 
   @override
   void initState() {
@@ -51,6 +53,7 @@ class _ManageStockState extends State<ManageStock> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
+    _gResponsiveFontSize = Constants.baseFontSize * (screenWidth / 375);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.steelBlue,
@@ -64,7 +67,7 @@ class _ManageStockState extends State<ManageStock> {
         ),
         leading: TextButton(onPressed: (){
           context.read<DataBloc>().add(FetchData(Constants.blocStringGetOrders, Constants.myUserId));
-          Navigator.pop(context);
+          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Home()), (route) => false);
         }, child: Icon(Icons.arrow_back_ios,color: AppColors.lightGray,), ),
         centerTitle: true,
       ),
@@ -94,14 +97,14 @@ class _ManageStockState extends State<ManageStock> {
                         hintStyle: TextStyle(
                             fontFamily: 'Roboto',
                             color: Colors.black,
-                            fontSize: Constants.gResponsiveFontSize - 4),
+                            fontSize: _gResponsiveFontSize - 4),
                         prefixIcon: Icon(Icons.search),
                       ),
                       style: TextStyle(
                           fontFamily: 'Roboto',
                           color: Colors.black,
                           fontWeight: FontWeight.bold,
-                          fontSize: Constants.gResponsiveFontSize - 2),
+                          fontSize: _gResponsiveFontSize - 2),
                     ),
                   ),
                   Align(
@@ -112,7 +115,7 @@ class _ManageStockState extends State<ManageStock> {
                         "$numberOfSearchedStocksTypeAvailable",
                         style: TextStyle(
                             fontFamily: 'Roboto',
-                            fontSize: Constants.gResponsiveFontSize - 2),
+                            fontSize: _gResponsiveFontSize - 2),
                       ),
                     ),
                   )

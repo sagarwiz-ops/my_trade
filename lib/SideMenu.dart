@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:my_trade/AssignManager.dart';
 import 'package:my_trade/BLOC/DataBloc.dart';
 import 'package:my_trade/BLOC/DataEvent.dart';
 import 'package:my_trade/ShowMyProfile.dart';
@@ -9,6 +10,7 @@ import 'package:my_trade/Utils/AppColors.dart';
 import 'package:my_trade/Firebase/MyFirebase.dart';
 import 'package:my_trade/Auth/Login.dart';
 import 'package:my_trade/ManageStock.dart';
+import 'package:my_trade/main.dart';
 
 import 'Utils/Constants.dart';
 
@@ -40,10 +42,10 @@ class _SidemenuState extends State<Sidemenu> {
                 backgroundColor: AppColors.skyBlue.withOpacity(0.5),
               ),
               SizedBox(height: 10,),
-              if(Constants.isDistributor) SideButton("My Stock", Icon(Icons.add_box)),
-              SideButton("My Followers", Icon(Icons.unfold_less_outlined)),
+              if(Constants.isDistributor || Constants.isManager) SideButton("My Stock", Icon(Icons.add_box)),
               SideButton("My Profile", Icon(Icons.manage_accounts_rounded)),
-              SideButton("Logout", Icon(Icons.power_settings_new))
+              SideButton("Logout", Icon(Icons.power_settings_new)),
+              if(Constants.isDistributor) SideButton("Manager", Icon(Icons.account_box_outlined))
             ],
           )),
     );
@@ -76,6 +78,8 @@ class _SidemenuState extends State<Sidemenu> {
                   actions: [
                     TextButton(onPressed: () async {
                       await FirebaseAuth.instance.signOut();
+                      aboutUser.setBool("isManager", false);
+                      aboutUser.setString(Constants.sharedPrefStringDistributorsUserIdForManager, "");
                       Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
                           builder: (context) => Login()), (
                           Route<dynamic> route) => false);
@@ -91,6 +95,8 @@ class _SidemenuState extends State<Sidemenu> {
             }else if(text == "My Profile"){
               context.read<DataBloc>().add(FetchData("getMyProfileData", null));
               Navigator.push(context, MaterialPageRoute(builder: (context) => ShowMyProfile()));
+            }else if(text == "Manager"){
+              Navigator.push(context, MaterialPageRoute(builder: (context) => Assignmanager()));
             }
           },
           child: Row(

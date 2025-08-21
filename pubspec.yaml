@@ -53,17 +53,24 @@ dependencies:
   font_awesome_flutter: ^10.1.0
   url_launcher: ^6.3.0
   flutter_contacts: ^1.1.7
-  internet_connection_checker: any
-  connectivity_plus: any
+  internet_connection_checker: ^3.0.1
+  connectivity_plus: ^6.1.4
+  shared_preferences: ^2.5.3
+  upi_pay: ^1.1.0
+#  android_intent_plus: ^3.0.2
+
 
 
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  json_serializable: ^6.8.0
-  build_runner: ^2.4.11
+
+flutter_launcher_icons:
+    android: true
+    ios: true
+    image_path: "assets/icons/myTrade.png"
+
+flutter_lints: ^4.0.0
 
 
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -71,7 +78,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^4.0.0
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

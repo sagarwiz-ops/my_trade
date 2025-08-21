@@ -11,11 +11,10 @@ import 'package:my_trade/Utils/Constants.dart';
 import 'package:my_trade/Firebase/MyFirebase.dart';
 import 'package:my_trade/Home.dart';
 import 'package:my_trade/CreateProfile.dart';
+import 'package:my_trade/main.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:sign_in_button/sign_in_button.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 
-import '../Models/UserProfile.dart';
 
 // for otp screen
 Timer? _timer;
@@ -28,6 +27,8 @@ bool hasInternet = false;
 var isDeviceConnected = false;
 bool isAlertDialogSet = false;
 var internetConnectionChecker = InternetConnectionChecker.createInstance();
+String distributorsUserIdForManager = "";
+
 
 final TextEditingController _mobileNumberController = TextEditingController();
 double _gResponsiveFontSize = 0.0;
@@ -417,11 +418,24 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
                               print(
                                   "Login after successfully signing in mobile number is  ${_mobileNumberController.text}");
 
-                              Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => CreateProfile(
-                                          _mobileNumberController.text)));
+                              if (await MyFirebase.checkIfTheUserIsValidated(
+                                  "+91${_mobileNumberController.text}")) {
+                               distributorsUserIdForManager =  await MyFirebase.getUserIdOfMyDistributor();
+                               if(distributorsUserIdForManager!= null && distributorsUserIdForManager.isNotEmpty){
+                                 aboutUser.setString(Constants.sharedPrefStringDistributorsUserIdForManager, distributorsUserIdForManager);
+                                 aboutUser.setBool("isManager", true);
+                                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Home()));
+
+                               }else{
+                                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Home()));
+                               }
+                              } else {
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => CreateProfile(
+                                            _mobileNumberController.text)));
+                              }
                             });
 
                             // Navigator.pop(context);

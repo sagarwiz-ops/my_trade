@@ -20,8 +20,10 @@ class DataBloc extends Bloc<DataEvent, DataState>{
 
     if(event.parameter == Constants.blocStringGetAllDistributors){
       List<UserProfile> allDistributors = await MyFirebase.getAllDistributors();
-      emit(state.copyWith(dataStatus: DataStatus.success, userProfiles:allDistributors, title: Constants.blocStringGetAllDistributors));
-    }else if(event.parameter == Constants.blocStringGetAllRetailers){
+      List<UserProfile> finalDistributors = await MyFirebase.checkAndRemoveIfAlreadyFollowing(allDistributors);
+      emit(state.copyWith(dataStatus: DataStatus.success, userProfiles:finalDistributors, title: Constants.blocStringGetAllDistributors));
+    }
+    else if(event.parameter == Constants.blocStringGetAllRetailers){
       List<UserProfile> allRetailers = await MyFirebase.getAllRetailersFollowRequests();
       emit(state.copyWith(dataStatus: DataStatus.success, userProfiles:allRetailers, title: Constants.blocStringGetAllRetailers));
     }

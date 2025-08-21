@@ -1,10 +1,11 @@
-import 'dart:ffi';
+
 import 'dart:io';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_common/get_reset.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:my_trade/Utils/AppColors.dart';
 import 'package:my_trade/Firebase/MyFirebase.dart';
@@ -80,10 +81,11 @@ class _AddinventoryState extends State<Addinventory> {
             if(_productNameController.text.isNotEmpty){
               showDialog(context: context, builder: (spinkitContext) => Constants.showSpinKit());
               await  _uploadImageToFirebase(imageFile, context);
-              await  MyFirebase.saveProduct(_productNameController.text, featuresGroup, _profileImageUrl);
+              await  MyFirebase.saveProduct(_productNameController.text.trim(), featuresGroup, _profileImageUrl);
 
               // dismiss spin kit
               Navigator.pop(context);
+              _profileImageUrl = "";
 
               Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ManageStock()));
             }else{
@@ -104,6 +106,7 @@ class _AddinventoryState extends State<Addinventory> {
               Stack(
                   children:[
                    ClipRRect(
+                     borderRadius: BorderRadius.circular(10),
                       child: Container(
                         color: imageFile == null ? AppColors.lightGray : null,
                         width: 150,
@@ -125,7 +128,10 @@ class _AddinventoryState extends State<Addinventory> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   IconButton(onPressed: (){
-                    showDialog(context: context, builder: (BuildContext context){
+                    showDialog(
+                      barrierDismissible: false,
+                        context: context, builder: (BuildContext context){
+
                       return AlertDialog(
                         content: TextField(
                           textCapitalization: TextCapitalization.words,
@@ -134,14 +140,14 @@ class _AddinventoryState extends State<Addinventory> {
                           decoration: InputDecoration(
                             border: OutlineInputBorder(),
                               focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(width: 2, color: AppColors.charcoal)
+                                  borderSide: BorderSide(width: 2, color: AppColors.steelBlue)
                               ),
                             label: Text("Feature Name", style: TextStyle(color: AppColors.charcoal),)
                           ),
                         ),
                         actions: [
                           TextButton(onPressed: (){
-                           String name  = _featureController.text;
+                           String name  = _featureController.text.trim();
                            if(_featureController.text.isNotEmpty && !featuresGroup.containsKey(name)){
                              print("AddInvnetory addFeature ${_featureController.text}");
                              featuresGroup[name] = [];
@@ -156,9 +162,15 @@ class _AddinventoryState extends State<Addinventory> {
                                  SizedBox(height:15)
                                ]);
                              });
+                           }else if(featuresGroup.containsKey(name)){
+                             Constants.showAToast("Feature already exists", context);
                            }
 
-                          }, child: Text("Done"))
+                           else{
+                             Constants.showAToast("Enter Feature Name", context);
+                           }
+
+                          }, child: Text("Done", style: TextStyle(color: AppColors.charcoal, fontWeight: FontWeight.bold),))
                         ],
                       );
                     });
@@ -217,8 +229,11 @@ class _AddinventoryState extends State<Addinventory> {
                                     cursorColor: AppColors.charcoal,
                                     decoration: InputDecoration(
                                       focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(width: 2, color: AppColors.charcoal)
+                                        borderSide: BorderSide(width: 2, color: AppColors.steelBlue)
                                       ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(color: AppColors.charcoal)
+                                        ),
                                         border: OutlineInputBorder(),
                                         label: Text("Sub Feature", style: TextStyle(color: AppColors.charcoal),)),
 
@@ -235,7 +250,7 @@ class _AddinventoryState extends State<Addinventory> {
                                           child: Row(
                                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                                             children: [
-                                              Text(featuresGroup[label]?[index] ?? "No Category", textAlign: TextAlign.center,),
+                                              Text(featuresGroup[label]?[index] ?? "No Category", textAlign: TextAlign.center,style: TextStyle(color: AppColors.charcoal),),
                                               IconButton(onPressed: (){
                                                 print("EditInventory removing ${featuresGroup[label]?[index]}");
                                                setState((){
@@ -255,19 +270,25 @@ class _AddinventoryState extends State<Addinventory> {
                                       Navigator.pop(context);
 
                                     },
-                                    child: Text("Done")),
+                                    child: Text("Done", style: TextStyle(color: AppColors.charcoal),)),
 
                                 TextButton(
                                     onPressed: () {
+                                      if(!featuresGroup[label]!.contains(_subFeatureController.text.trim()) && _subFeatureController.text.isNotEmpty){
+                                        featuresGroup[label]
+                                            ?.add(_subFeatureController.text);
 
-                                      featuresGroup[label]
-                                          ?.add(_subFeatureController.text);
+                                        setState(() {
+                                          _subFeatureController.clear();
+                                        });
+                                      }else if(featuresGroup[label]!.contains(_subFeatureController.text.trim())){
+                                        Constants.showAToast("Sub Feature Already Exists", context);
+                                      }else{
+                                        Constants.showAToast("Please Enter The Sub Feature", context);
+                                      }
 
-                                      setState(() {
-                                        _subFeatureController.clear();
-                                      });
                                     },
-                                    child: Text("Add"))
+                                    child: Text("Add", style: TextStyle(color: AppColors.charcoal),))
                               ],
                             );
                           });
@@ -414,7 +435,7 @@ class _AddinventoryState extends State<Addinventory> {
       // if there has been any error in compressing the file then null will be returned by the catch block
       if (imageFile != null) {
         //   create a unique file for uploading to firebase
-        var fileName = "${Constants.stringProductImages} ${_productNameController.text}";
+        var fileName = "${Constants.stringProductImages} ${_productNameController.text.trim()}";
         print(fileName);
         //   get the reference to firebase storage
         Reference firebaseStorageRef = FirebaseStorage.instance

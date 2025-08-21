@@ -12,6 +12,7 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:my_trade/BLOC/DataBloc.dart';
 import 'package:my_trade/EditInventory.dart';
 import 'package:my_trade/Firebase/MyFirebase.dart';
+import 'package:my_trade/ManageStock.dart';
 import 'package:my_trade/Utils/CustomCacheManager.dart';
 import 'package:my_trade/AddInventory.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -64,14 +65,18 @@ class _UpdateInventoryState extends State<UpdateInventory> {
   bool isAlertDialogSet = false;
   var internetConnectionChecker = InternetConnectionChecker.createInstance();
 
-
   @override
   void initState() {
     super.initState();
     print("update inventory class");
 
-    FirebaseDatabase.instance.ref(Constants.databaseRefStringMyTrade).child(Constants.databaseRefStringEnv)
-        .child('ProductCount').child(Constants.myUserId).child('TotalProductCount').keepSynced(true);
+    FirebaseDatabase.instance
+        .ref(Constants.databaseRefStringMyTrade)
+        .child(Constants.databaseRefStringEnv)
+        .child('ProductCount')
+        .child(Constants.myUserId)
+        .child('TotalProductCount')
+        .keepSynced(true);
 
     _currentProduct = widget.productName;
 
@@ -83,33 +88,33 @@ class _UpdateInventoryState extends State<UpdateInventory> {
     showCupertinoDialog(
         context: context,
         builder: (BuildContext context) => CupertinoAlertDialog(
-          title: Text(
-            "No Internet Connection",
-            style: TextStyle(
-                fontSize: _gResponsiveFontSize - 4,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.bold),
-          ),
-          content: Text("Please Check Your Internet Connection",
-              style: TextStyle(
-                  fontSize: _gResponsiveFontSize - 4,
-                  fontFamily: 'Roboto')),
-          actions: [
-            TextButton(
-                onPressed: () async {
-                  // dismiss the dialog box
-                  Navigator.pop(context);
-                  isAlertDialogSet = false;
-                  isDeviceConnected =
-                  await internetConnectionChecker.hasConnection;
-                  //  id there is no internet connection and the dialog box is not showing
-                  if (!isDeviceConnected && !isAlertDialogSet) {
-                    showAlertDialogForNoInternet();
-                  }
-                },
-                child: Text("OK"))
-          ],
-        ));
+              title: Text(
+                "No Internet Connection",
+                style: TextStyle(
+                    fontSize: _gResponsiveFontSize - 4,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.bold),
+              ),
+              content: Text("Please Check Your Internet Connection",
+                  style: TextStyle(
+                      fontSize: _gResponsiveFontSize - 4,
+                      fontFamily: 'Roboto')),
+              actions: [
+                TextButton(
+                    onPressed: () async {
+                      // dismiss the dialog box
+                      Navigator.pop(context);
+                      isAlertDialogSet = false;
+                      isDeviceConnected =
+                          await internetConnectionChecker.hasConnection;
+                      //  id there is no internet connection and the dialog box is not showing
+                      if (!isDeviceConnected && !isAlertDialogSet) {
+                        showAlertDialogForNoInternet();
+                      }
+                    },
+                    child: Text("OK"))
+              ],
+            ));
   }
 
   Future<void> _getConnectivity() async {
@@ -126,18 +131,19 @@ class _UpdateInventoryState extends State<UpdateInventory> {
     _profileImageUrl = null;
   }
 
-
-
   Future<void> _initialize() async {
+    _availableQuantity = "00";
+    _currentProductPrice = "00";
+    _totalQuantity = "00";
+
     print("UpdateInvnetory initializing");
     currentProductName = widget.productName;
 
     print("updateInvnetory widget.drodpwon is ${widget.dropDownLists}");
 
-    if(widget.imageUrl != null){
+    if (widget.imageUrl != null) {
       _profileImageUrl = widget.imageUrl;
     }
-
 
     await getProductVariants();
 
@@ -152,11 +158,8 @@ class _UpdateInventoryState extends State<UpdateInventory> {
     selectedValues = List.generate(widget.dropDownLists.length, (_) => "-");
     print("the selected values are ${selectedValues}");
 
-
-
     tempHintList = widget.dropDownLists.keys.toList();
     print("UpdateInvnetory temp hint list is ${tempHintList}");
-
 
     // Suppose widget.dropDownLists is Map<String, dynamic>
     tempList = widget.dropDownLists.values
@@ -180,10 +183,10 @@ class _UpdateInventoryState extends State<UpdateInventory> {
   }
 
   getProductVariants() async {
-    variantsMap = await MyFirebase.getProductVariants(widget.productName,Constants.myUserId);
+    variantsMap = await MyFirebase.getProductVariants(
+        widget.productName, Constants.myUserId);
     print("UpdateInvnetroy get product variants fetching products successful");
-    print(
-        "UpdateInventory the products variants are $variantsMap");
+    print("UpdateInventory the products variants are $variantsMap");
   }
 
   @override
@@ -202,11 +205,21 @@ class _UpdateInventoryState extends State<UpdateInventory> {
           )
         : Scaffold(
             appBar: AppBar(
-              leading: IconButton(onPressed: (){
-                Navigator.pop(context);
-                context.read<DataBloc>().add(FetchData(Constants.blocStringGetMyProducts, Constants.myUserId));
-              }, icon: Icon(Icons.arrow_back_ios, color: AppColors.white,)),
-              title: Text("${widget.productName}", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.lightGray),),
+              leading: IconButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ManageStock()));
+                    context.read<DataBloc>().add(FetchData(
+                        Constants.blocStringGetMyProducts, Constants.myUserId));
+                  },
+                  icon: Icon(
+                    Icons.arrow_back_ios,
+                    color: AppColors.white,
+                  )),
+              title: Text(
+                "${widget.productName}",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: AppColors.lightGray),
+              ),
               actions: [
                 IconButton(
                     onPressed: () {
@@ -214,7 +227,9 @@ class _UpdateInventoryState extends State<UpdateInventory> {
                           context,
                           MaterialPageRoute(
                               builder: (context) => EditInventory(
-                                  widget.productName, widget.dropDownLists, _profileImageUrl ?? "")));
+                                  widget.productName,
+                                  widget.dropDownLists,
+                                  _profileImageUrl ?? "")));
                     },
                     icon: Icon(
                       Icons.add_box_outlined,
@@ -222,28 +237,33 @@ class _UpdateInventoryState extends State<UpdateInventory> {
                     )),
                 IconButton(
                     onPressed: () async {
-                      _getConnectivity();
-                      if(!isDeviceConnected){
-                        _getConnectivity();
-                      }else{
-                        bool allAreDefault = currentSelectedFeatures.values.every((val) => val == "-");
+                        bool allAreDefault = currentSelectedFeatures.values
+                            .every((val) => val == "-");
 
-                        if(allAreDefault && imageFile == null){
-                          Constants.showAToast("Please Select Some Features", context);
-                        }else{
-                          if (imageFile != null && (_productQuantityController.text.isEmpty && _productPriceController.text.isEmpty)) {
-                            showDialog(context: context, builder: (context) => Constants.showSpinKit());
+                        if (allAreDefault && imageFile == null) {
+                          Constants.showAToast(
+                              "Please Select Some Features", context);
+                        } else {
+                          if (imageFile != null &&
+                              (_productQuantityController.text.isEmpty &&
+                                  _productPriceController.text.isEmpty)) {
+                            showDialog(
+                                context: context,
+                                builder: (context) => Constants.showSpinKit());
                             // only image has to be updated
                             await _uploadImageToFirebase(imageFile, context);
                             imageFile = null;
                             await getProductVariants();
                             Navigator.pop(context);
-                            Constants.showAToast("Image Successfully Updated", context);
-
-                          }else
-                          if ((_productQuantityController.text.isNotEmpty &&
-                              _productPriceController.text.isNotEmpty) && imageFile == null) {
-                            showDialog(context: context, builder: (context) => Constants.showSpinKit());
+                            Constants.showAToast(
+                                "Image Successfully Updated", context);
+                          } else if ((_productQuantityController
+                                      .text.isNotEmpty &&
+                                  _productPriceController.text.isNotEmpty) &&
+                              imageFile == null) {
+                            showDialog(
+                                context: context,
+                                builder: (context) => Constants.showSpinKit());
 
                             // only inventory to be updated
                             print("updateInventory about to save inventory");
@@ -263,9 +283,12 @@ class _UpdateInventoryState extends State<UpdateInventory> {
                               _totalQuantity = "";
                               fetchTheVariant();
                             });
-
-                          }else if((_productPriceController.text.isNotEmpty && _productQuantityController.text.isNotEmpty) && imageFile != null){
-                            showDialog(context: context, builder: (context) => Constants.showSpinKit());
+                          } else if ((_productPriceController.text.isNotEmpty &&
+                                  _productQuantityController.text.isNotEmpty) &&
+                              imageFile != null) {
+                            showDialog(
+                                context: context,
+                                builder: (context) => Constants.showSpinKit());
                             //   update both image and inventory
                             await _uploadImageToFirebase(imageFile, context);
                             imageFile = null;
@@ -284,20 +307,15 @@ class _UpdateInventoryState extends State<UpdateInventory> {
                               fetchTheVariant();
                             });
 
-
-
                             // dismiss dialog
                             Navigator.pop(context);
-                            Constants.showAToast("Data successfully Updated", context);
-                          }
-
-                          else {
+                            Constants.showAToast(
+                                "Data successfully Updated", context);
+                          } else {
                             Constants.showAToast(
                                 "One Of The Fields Is Empty", context);
                           }
                         }
-                      }
-
                     },
                     icon: Icon(
                       Icons.check,
@@ -318,29 +336,33 @@ class _UpdateInventoryState extends State<UpdateInventory> {
                     children: [
                       Stack(children: [
                         ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
                           child: imageFile != null
                               ? Container(
-                            height: 100,
-                            width: 100,
-                            child: Image.file(
-                              imageFile!,
-                              fit: BoxFit.cover,
-                            ),
-                          )
+                                  height: 100,
+                                  width: 100,
+                                  child: Image.file(
+                                    imageFile!,
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
                               : Container(
-                              height: 100,
-                              width: 100,
-                              color: _profileImageUrl == null
-                                  ? AppColors.lightGray
-                                  : null,
-                              child: _profileImageUrl != null
-                                  ? _profileImageUrl!.isNotEmpty
-                                  ? Image(
-                                image: CachedNetworkImageProvider(_profileImageUrl!, cacheManager: CustomCacheManager()),
-                                fit: BoxFit.cover,
-                              )
-                                  : null
-                                  : null),
+                                  height: 100,
+                                  width: 100,
+                                  color: _profileImageUrl == null
+                                      ? AppColors.lightGray
+                                      : null,
+                                  child: _profileImageUrl != null
+                                      ? _profileImageUrl!.isNotEmpty
+                                          ? Image(
+                                              image: CachedNetworkImageProvider(
+                                                  _profileImageUrl!,
+                                                  cacheManager:
+                                                      CustomCacheManager()),
+                                              fit: BoxFit.cover,
+                                            )
+                                          : Image.asset('assets/images/no_image.png')
+                                      : null),
                         ),
                         Positioned(
                             bottom: -14,
@@ -361,32 +383,54 @@ class _UpdateInventoryState extends State<UpdateInventory> {
                         children: [
                           Row(
                             children: [
-                              Text("Available Quantity :", style: TextStyle(color: AppColors.charcoal, fontSize: 16, fontWeight: FontWeight.bold),),
+                              Text(
+                                "Available Quantity :",
+                                style: TextStyle(
+                                    color: AppColors.charcoal,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold),
+                              ),
                               SizedBox(width: 4),
-                              Text("$_availableQuantity", style: TextStyle(color: AppColors.charcoal, fontSize: 16, fontWeight: FontWeight.bold))
+                              Text("$_availableQuantity",
+                                  style: TextStyle(
+                                      color: AppColors.charcoal,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold))
                             ],
                           ),
                           Row(
                             children: [
-                              Text(" Current Product Price:", style: TextStyle(color: AppColors.charcoal, fontSize: 16, fontWeight: FontWeight.bold)),
+                              Text(" Current Product Price:",
+                                  style: TextStyle(
+                                      color: AppColors.charcoal,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold)),
                               SizedBox(
                                 width: 4,
                               ),
-                              Text("$_currentProductPrice", style: TextStyle(color: AppColors.charcoal, fontSize: 16, fontWeight: FontWeight.bold))
+                              Text("$_currentProductPrice",
+                                  style: TextStyle(
+                                      color: AppColors.charcoal,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold))
                             ],
                           ),
                         ],
                       )
                     ],
                   ),
-                  SizedBox(height: 10,),
-                  textField("New Product Price", _productPriceController, false),
                   SizedBox(
                     height: 10,
                   ),
-                  textField("Add New Quantity", _productQuantityController, true),
+                  textField(
+                      "New Product Price", _productPriceController, false),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  textField(
+                      "Add New Quantity", _productQuantityController, true),
                   Align(
-                    alignment: Alignment.centerLeft,
+                      alignment: Alignment.centerLeft,
                       child: Text("Total Quantity : ${_totalQuantity}")),
                   Expanded(
                     child: ListView.builder(
@@ -461,24 +505,24 @@ class _UpdateInventoryState extends State<UpdateInventory> {
     );
   }
 
-  Widget textField(String label, TextEditingController controller, bool isAddNewQuantity) {
+  Widget textField(
+      String label, TextEditingController controller, bool isAddNewQuantity) {
     return TextField(
       cursorColor: AppColors.charcoal,
       keyboardType: TextInputType.number,
       textCapitalization: TextCapitalization.words,
-      onChanged: (value){
+      onChanged: (value) {
         print("UpdateInvnetory the user typed $value");
-        if(isAddNewQuantity){
-
-        setState(() {
-         if(controller.text.isNotEmpty){
-           _totalQuantity =  "${int.parse(value)+ int.parse(_availableQuantity)})";
-           print("UpdateInvnetory after entering th value $label");
-         }else{
-           _totalQuantity = "";
-         }
-        });
-
+        if (isAddNewQuantity) {
+          setState(() {
+            if (controller.text.isNotEmpty) {
+              _totalQuantity =
+                  "${int.parse(value) + int.parse(_availableQuantity)})";
+              print("UpdateInvnetory after entering th value $label");
+            } else {
+              _totalQuantity = "";
+            }
+          });
         }
       },
       controller: controller,
@@ -494,16 +538,17 @@ class _UpdateInventoryState extends State<UpdateInventory> {
               fontWeight: FontWeight.bold, color: AppColors.charcoal)),
     );
   }
+
   //
   assignDefaultValues(List<dynamic> hintList) {
-
     print("UpdateInvnetory ${selectedValues}");
     print("the hint is $hintList");
 
-    for(String hint in hintList){
+    for (String hint in hintList) {
       currentSelectedFeatures.addAll({hint: "-"});
     }
-    print("UpdateInvnetory assignDefaultValues are  ${currentSelectedFeatures} ");
+    print(
+        "UpdateInvnetory assignDefaultValues are  ${currentSelectedFeatures} ");
 
     print(
         "UpdateInvnetory assign default values currentSelectedFeatures the map is ${currentSelectedFeatures}");
@@ -523,62 +568,57 @@ class _UpdateInventoryState extends State<UpdateInventory> {
 
   void fetchTheVariant() {
     matchedVariantKey = "";
-    print("updateInventory selected values are at fetch the variant $selectedValues");
+    print(
+        "updateInventory selected values are at fetch the variant $selectedValues");
 
     print(
         "UpdateInventory fetchTheVariant previous selected value is ${previousSelectedValue}");
     // bool allSelected = selectedValues
     //     .every((value) => value != "-" && value != previousSelectedValue);
 
+    Map<dynamic, dynamic> foundVariant = {};
 
-      Map<dynamic, dynamic> foundVariant = {};
+    for (var entry in variantsMap.entries) {
+      final variantValues = entry.value;
+      print("updateInventory fetchTheVariant  variant values ${variantValues}");
 
-      for (var entry in variantsMap.entries) {
+      bool isMatched = currentSelectedFeatures.entries.every((featureEntry) {
+        if (featureEntry.key == "productQuantity") return true;
+        if (featureEntry.key == "productPrice") return true;
+        final key = featureEntry.key;
+        final selectedValue = featureEntry.value;
+        final variantValue = variantValues[key];
 
-        final variantValues = entry.value;
-        print("updateInventory fetchTheVariant  variant values ${variantValues}");
+        print("key: $key, selected: $selectedValue, variant: $variantValue");
 
-        bool isMatched = currentSelectedFeatures.entries.every((featureEntry) {
-          if(featureEntry.key == "productQuantity") return true;
-          if(featureEntry.key == "productPrice") return true;
-          final key = featureEntry.key;
-          final selectedValue = featureEntry.value;
-          final variantValue = variantValues[key];
+        return variantValue == selectedValue || variantValue == "-";
+      });
 
-          print("key: $key, selected: $selectedValue, variant: $variantValue");
+      if (isMatched) {
+        matchedVariantKey = entry.key;
+        print("UpdateInventory isMatched ${matchedVariantKey}");
+        foundVariant = variantValues;
+        print("the found variant is ${foundVariant}");
+        setState(() {
+          final aq = foundVariant['productQuantity'] ?? "";
+          final npp = foundVariant['productPrice'] ?? "";
 
-
-          return variantValue == selectedValue || variantValue == "-";
+          _availableQuantity = aq.toString();
+          _currentProductPrice = npp;
+          matchedVariant = foundVariant;
         });
-
-        if (isMatched) {
-          matchedVariantKey = entry.key;
-          print("UpdateInventory isMatched ${matchedVariantKey}");
-          foundVariant = variantValues;
-          print("the found variant is ${foundVariant}");
+        break;
+      } else {
+        matchedVariantKey = "";
+        matchedVariant = {};
+        if (_availableQuantity != "00" && _currentProductPrice != "00") {
           setState(() {
-
-            final aq = foundVariant['productQuantity'] ?? "";
-            final npp = foundVariant['productPrice'] ?? "";
-
-            _availableQuantity = aq.toString();
-            _currentProductPrice = npp;
-            matchedVariant = foundVariant;
+            _availableQuantity = "00";
+            _currentProductPrice = "00";
           });
-          break;
-
-        }else{
-          matchedVariantKey = "";
-          matchedVariant = {};
-          if(_availableQuantity != "00" && _currentProductPrice != "00"){
-            setState(() {
-              _availableQuantity = "00";
-              _currentProductPrice = "00";
-
-            });
-          }
         }
       }
+    }
   }
 
   _showModalBottomSheet() {
@@ -641,7 +681,7 @@ class _UpdateInventoryState extends State<UpdateInventory> {
     }
   }
 
-   _uploadImageToFirebase(File? imageFile, BuildContext context) async {
+  _uploadImageToFirebase(File? imageFile, BuildContext context) async {
     // if new
     if (imageFile != null) {
       // get the size of the (image) file with
@@ -654,8 +694,7 @@ class _UpdateInventoryState extends State<UpdateInventory> {
       if (imageFile != null) {
         //   create a unique file for uploading to firebase
 
-        var fileName =
-            "${Constants.stringProductImages} ${currentProductName}";
+        var fileName = "${Constants.stringProductImages} ${currentProductName}";
         print(fileName);
         //   get the reference to firebase storage
         Reference firebaseStorageRef = FirebaseStorage.instance
@@ -676,7 +715,8 @@ class _UpdateInventoryState extends State<UpdateInventory> {
           _profileImageUrl = await snapshot.ref.getDownloadURL();
           print("profile profileImageUrl = $_profileImageUrl");
 
-          await MyFirebase.updateProductImage(_currentProduct, _profileImageUrl ?? "");
+          await MyFirebase.updateProductImage(
+              _currentProduct, _profileImageUrl ?? "");
         } catch (e) {
           Navigator.pop(context);
           Constants.showAToast(

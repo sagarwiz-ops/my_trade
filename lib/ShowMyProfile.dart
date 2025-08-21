@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:my_trade/BLOC/DataBloc.dart';
 import 'package:my_trade/Firebase/MyFirebase.dart';
+import 'package:my_trade/Home.dart';
 import 'package:my_trade/Utils/AppColors.dart';
 import 'package:my_trade/Utils/Constants.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -80,6 +81,7 @@ class _ShowMyProfileState extends State<ShowMyProfile> {
               await  MyFirebase.updateUserProfile(userProfile, _userId);
               //   dismiss spin kit
                 Navigator.pop(context);
+                Constants.showAToast("Details Updated", context);
               },
               icon: Icon(Icons.check, color: AppColors.white,))
         ],

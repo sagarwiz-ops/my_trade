@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:my_trade/Utils/Constants.dart';
@@ -17,7 +18,10 @@ class MyFirebase {
       .child(Constants.databaseRefStringEnv);
 
   static Future setUserProfile(UserProfile userProfile) async {
-    final uc = realTimeDbRef.child("TotalUserCount").child("UserCount").ref;
+    final uc = realTimeDbRef
+        .child("TotalUserCount")
+        .child("UserCount")
+        .ref;
 
     DataSnapshot ee = await uc.get();
     print("MyFirebase ee is ${ee.value}");
@@ -48,35 +52,13 @@ class MyFirebase {
   }
 
   static Future<void> updateShopImageUrl(String imageUrl) async {
-    realTimeDbRef
+    await realTimeDbRef
         .child(Constants.stringDbNodeUsers)
         .child(Constants.myUserId)
         .update({'profileImageUrl': imageUrl});
   }
 
-  static Future<void> uploadImageWithAUniqueNumber() async {
-    final pc = realTimeDbRef
-        .child("ProductCount")
-        .child(Constants.myUserId)
-        .child("TotalProductCount")
-        .ref;
-    String productNumber;
-
-    pc.runTransaction((pc) {
-      if (pc != null) {
-        Constants.stringProductNumberForImage = pc.toString();
-        print(
-            "product number for uplaoding image to firebase is ${Constants.stringProductNumberForImage}");
-        int pci = (pc as int ?? 0) + 1;
-        return Transaction.success(pci);
-      } else {
-        productNumber = "";
-        return Transaction.abort();
-      }
-    });
-  }
-
-  static getMyUserId() async {
+  static Future<void> getMyUserId() async {
     DatabaseEvent event = await realTimeDbRef
         .child(Constants.stringDbNodeValidatedNumbers)
         .child(phoneNumber!)
@@ -98,7 +80,7 @@ class MyFirebase {
     DataSnapshot snapshot = event.snapshot;
     if (snapshot.value != null) {
       Map<String, dynamic> map =
-          Map<String, dynamic>.from(snapshot.value as Map);
+      Map<String, dynamic>.from(snapshot.value as Map);
       print("MyFirebase getMyProfileData ${UserProfile.fromJson(map)}");
       return UserProfile.fromJson(map);
     } else {
@@ -106,7 +88,7 @@ class MyFirebase {
     }
   }
 
-  static getMyProfileDetails() async {
+  static Future<void> getMyProfileDetails(bool isManager) async {
     DatabaseEvent event = await realTimeDbRef
         .child(Constants.stringDbNodeUsers)
         .child(Constants.myUserId)
@@ -115,10 +97,15 @@ class MyFirebase {
     if (snapshot.value != null) {
       Map<dynamic, dynamic> data = snapshot.value as Map<dynamic, dynamic>;
       print("myProfile ${snapshot.value}");
-      Constants.isDistributor = data["profileType"] == "Distributor";
+      if (!isManager) {
+        Constants.isDistributor = data["profileType"] == "Distributor";
+      }
       print(
-          "MyFirebase getMyProfileDetails isDistributor ${Constants.isDistributor} ");
-      Constants.stringNameOfTheBusiness = data["nameOfTheShop"];
+          "MyFirebase getMyProfileDetails isDistributor ${Constants
+              .isDistributor} ");
+      isManager ?
+      Constants.stringNameOfTheBusiness = "${data["nameOfTheShop"]} [Manager]"
+          : Constants.stringNameOfTheBusiness = data["nameOfTheShop"];
     } else {}
   }
 
@@ -137,7 +124,8 @@ class MyFirebase {
         .once();
     DataSnapshot snapshot = event.snapshot;
     print(
-        "MyFirebase checkMyFollowRequests follow Requests are ${snapshot.value}");
+        "MyFirebase checkMyFollowRequests follow Requests are ${snapshot
+            .value}");
     if (snapshot.value != null) {
       Map<dynamic, dynamic> data = snapshot.value as Map<dynamic, dynamic>;
       print("MyFirebase checkMyFollowRequests the data is $data");
@@ -163,10 +151,11 @@ class MyFirebase {
 
       if (snapshot.exists) {
         print(
-            "MyFirebase getAllRetailersFollowRequests snapshot.value ${snapshot.value} ");
+            "MyFirebase getAllRetailersFollowRequests snapshot.value ${snapshot
+                .value} ");
         Map<dynamic, dynamic> map1 = snapshot.value as Map<dynamic, dynamic>;
         Map<String, dynamic> map2 =
-            map1.map((key, value) => MapEntry(key.toString(), value));
+        map1.map((key, value) => MapEntry(key.toString(), value));
         print(
             "MyFirebase getAllRetailersFollowRequests user who has sent follow request: map1 $map1");
         print(
@@ -205,7 +194,7 @@ class MyFirebase {
     if (snapshot.value != null) {
       print("MyFirebase getMyDistributors ${snapshot.value}");
       Map<dynamic, dynamic> myDistributors =
-          snapshot.value as Map<dynamic, dynamic>;
+      snapshot.value as Map<dynamic, dynamic>;
       myDistributors.forEach((key, value) {
         userIds.add(key);
       });
@@ -216,12 +205,14 @@ class MyFirebase {
             .child(userId)
             .once();
         DataSnapshot snapshot = event.snapshot;
-        final raw = snapshot.value as Map<Object?, Object?>;
-        Map<String, dynamic> map =
-            raw.map((key, value) => MapEntry(key.toString(), value));
+        if (snapshot.value != null) {
+          final raw = snapshot.value as Map<Object?, Object?>;
+          Map<String, dynamic> map =
+          raw.map((key, value) => MapEntry(key.toString(), value));
 
-        print("MyFirebase getMyFollowers bbbbb ${map}");
-        userProfiles.add(UserProfile.fromJson(map));
+          print("MyFirebase getMyFollowers bbbbb ${map}");
+          userProfiles.add(UserProfile.fromJson(map));
+        }
       }
     }
 
@@ -251,15 +242,21 @@ class MyFirebase {
           .child(userId)
           .once();
       DataSnapshot snapshot = event.snapshot;
-      final raw = snapshot.value as Map<Object?, Object?>;
-      Map<String, dynamic> map =
-          raw.map((key, value) => MapEntry(key.toString(), value));
+      if (snapshot.value != null) {
+        final raw = snapshot.value as Map<Object?, Object?>;
+        Map<String, dynamic> map =
+        raw.map((key, value) => MapEntry(key.toString(), value));
 
-      print("MyFirebase getMyFollowers bbbbb ${map}");
-      userProfiles.add(UserProfile.fromJson(map));
+        print("MyFirebase getMyFollowers bbbbb ${map}");
+        userProfiles.add(UserProfile.fromJson(map));
+      } else {
+        print("MyFirebase getMyFollowers snapshot was null");
+      }
+      print(
+          "MyFirebase getMyFollowers myUserProfiles ${userProfiles.first
+              .nameOfTheShop}");
+      return userProfiles;
     }
-    print(
-        "MyFirebase getMyFollowers myUserProfiles ${userProfiles.first.nameOfTheShop}");
     return userProfiles;
   }
 
@@ -308,8 +305,7 @@ class MyFirebase {
     return userProfiles;
   }
 
-  static saveInventory(
-      String productName,
+  static Future<void> saveInventory(String productName,
       String productPrice,
       String productQuantity,
       Map<dynamic, dynamic> features,
@@ -343,8 +339,7 @@ class MyFirebase {
 
         // Remove quantity if it's not part of the "feature comparison"
         final comparisonVariant = Map.of(variant)
-          ..remove("productQuantity")
-          ..remove("productPrice");
+          ..remove("productQuantity")..remove("productPrice");
 
         if (mapEquals(comparisonVariant, features)) {
           found = true;
@@ -377,7 +372,7 @@ class MyFirebase {
       print("saveInvnetory updatedFeautres are ${features}");
 
       final Map<String, Object?> safeMap = features.map(
-        (key, value) => MapEntry(key.toString(), value),
+            (key, value) => MapEntry(key.toString(), value),
       );
 
       // update existing stock
@@ -417,8 +412,8 @@ class MyFirebase {
     }
   }
 
-  static saveProduct(String productName, Map<String, dynamic> lists,
-      String productImageUrl) async {
+  static Future<void> saveProduct(String productName,
+      Map<String, dynamic> lists, String productImageUrl) async {
     await realTimeDbRef
         .child(Constants.stringDbNodeInventory)
         .child(Constants.myUserId)
@@ -438,8 +433,8 @@ class MyFirebase {
         .update(lists);
   }
 
-  static updateAllTheVariantsWithTheNewFeature(
-      String productName, List<String> featureNames) async {
+  static Future<void> updateAllTheVariantsWithTheNewFeature(String productName,
+      List<String> featureNames) async {
     DatabaseEvent event = await realTimeDbRef
         .child(Constants.stringDbNodeInventory)
         .child(Constants.myUserId)
@@ -448,7 +443,7 @@ class MyFirebase {
     DataSnapshot snapshot = event.snapshot;
     if (snapshot.value != null) {
       Map<String, dynamic> variantsMap =
-          Map<String, dynamic>.from(snapshot.value as Map);
+      Map<String, dynamic>.from(snapshot.value as Map);
       print("updateAllTheVariantsWithTheNewFeature variantsMap ${variantsMap}");
 
       for (String featureName in featureNames) {
@@ -469,8 +464,8 @@ class MyFirebase {
     }
   }
 
-  static Future<void> removeFeatureFromAllVariants(
-      String productName, String featureName) async {
+  static Future<void> removeFeatureFromAllVariants(String productName,
+      String featureName) async {
     // remove the feature from data as well
     MyFirebase.realTimeDbRef
         .child(Constants.stringDbNodeInventory)
@@ -490,7 +485,7 @@ class MyFirebase {
 
     if (snapshot.value != null) {
       Map<String, dynamic> variantsMap =
-          Map<String, dynamic>.from(snapshot.value as Map);
+      Map<String, dynamic>.from(snapshot.value as Map);
 
       print("Before removal variantsMap: $variantsMap");
 
@@ -511,8 +506,8 @@ class MyFirebase {
     }
   }
 
-  static Future<void> deleteTheSubFeatureFromAllTheVariants(
-      String subFeature, String productName, String featureName) async {
+  static Future<void> deleteTheSubFeatureFromAllTheVariants(String subFeature,
+      String productName, String featureName) async {
     DatabaseEvent event = await realTimeDbRef
         .child(Constants.stringDbNodeInventory)
         .child(Constants.myUserId)
@@ -526,7 +521,7 @@ class MyFirebase {
       print(
           "MyFirebase deleteTheSubFeatureFromAllTheVariants ${snapshot.value}");
       Map<String, dynamic> variantsMap =
-          Map<String, dynamic>.from(snapshot.value as Map);
+      Map<String, dynamic>.from(snapshot.value as Map);
 
       variantsMap.updateAll((variantId, variantData) {
         print(
@@ -544,7 +539,46 @@ class MyFirebase {
     }
   }
 
-  static Future<void> deleteTheProduct(String productName) async {
+  static Future<bool> checkForExistingOrders(String productName) async {
+    print("MyFirebase checkForExisitng Orders product name is  ${productName}");
+    DatabaseEvent event = await realTimeDbRef
+        .child(Constants.stringDbNodeInventory)
+        .child(Constants.myUserId)
+        .child("MyOrders")
+        .once();
+    DataSnapshot snapshot = event.snapshot;
+    print("MyFirebase checkForExistingOrders ${snapshot.value}");
+    if (snapshot.value != null) {
+      Map<dynamic, dynamic> sMap = snapshot.value as Map<dynamic, dynamic>;
+      print("MyFirebase checkForExistingOrders entries ${sMap.entries}");
+      for (var outerEntry in sMap.entries) {
+        final innerMap = outerEntry.value as Map<dynamic, dynamic>;
+        for (var innerKey in innerMap.keys) {
+          if (innerKey == productName) {
+            return true;
+          }
+          return false;
+        }
+      }
+    } else {
+      return false;
+    }
+    return false;
+  }
+
+  static Future<void> deleteTheProduct(String productName,
+      String imageUrl) async {
+//   delete the image if exists
+    if (imageUrl.isNotEmpty && imageUrl != null) {
+      var fileName = "${Constants.stringProductImages} ${productName.trim()}";
+
+      Reference firebaseStorageRef = FirebaseStorage.instance
+          .ref()
+          .child('myTrade/productImages/${Constants.myUserId}/$fileName');
+
+      await firebaseStorageRef.delete();
+    }
+
     realTimeDbRef
         .child(Constants.stringDbNodeInventory)
         .child(Constants.myUserId)
@@ -567,8 +601,8 @@ class MyFirebase {
         .remove();
   }
 
-  static Future<Map<dynamic, dynamic>> getProductVariants(
-      String productName, String userId) async {
+  static Future<Map<dynamic, dynamic>> getProductVariants(String productName,
+      String userId) async {
     Map<dynamic, dynamic> variantsMap = {};
     DatabaseEvent event = await realTimeDbRef
         .child(Constants.stringDbNodeInventory)
@@ -607,7 +641,7 @@ class MyFirebase {
     return map;
   }
 
-  static getAllProducts(String distributorsUserId) async {
+  static Future<void> getAllProducts(String distributorsUserId) async {
     DatabaseEvent event = await realTimeDbRef
         .child(Constants.stringDbNodeInventory)
         .child(distributorsUserId)
@@ -629,8 +663,8 @@ class MyFirebase {
     }
   }
 
-  static Future<void> updateProductImage(
-      String productName, String productImageUrl) async {
+  static Future<void> updateProductImage(String productName,
+      String productImageUrl) async {
     realTimeDbRef
         .child(Constants.stringDbNodeInventory)
         .child(Constants.myUserId)
@@ -642,11 +676,13 @@ class MyFirebase {
   static Future<void> setUserIdForProductCount() async {
     if (Constants.isDistributor) {
       print("MyFirebase setUserIdFor ${Constants.isDistributor}");
-      realTimeDbRef
+      await realTimeDbRef
           .child("ProductCount")
           .child(Constants.myUserId)
           .child("TotalProductCount")
           .set(10);
+    } else {
+      print("myFirebase productCount not set");
     }
   }
 
@@ -686,7 +722,6 @@ class MyFirebase {
           Constants.showAToast("The product is currently unavailable", context);
           return Transaction.abort();
         }
-        return Transaction.abort();
       });
     } catch (e) {
       return false;
@@ -728,6 +763,7 @@ class MyFirebase {
       print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAA ${quantitySnapshot.value}");
     } else {
       print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA snapshot is null");
+      totalQuantity = int.parse(value);
     }
     realTimeDbRef
         .child(Constants.stringDbNodeInventory)
@@ -752,10 +788,12 @@ class MyFirebase {
   static Future<List<Map<dynamic, dynamic>>> getOrderVariants(
       String userId) async {
     List<Map<dynamic, dynamic>> productDetails = [];
-    Map<dynamic, dynamic> myMap = {};
+    Map<dynamic, List<Map<dynamic, dynamic>>> myMap = {};
     String variantName = "";
     List<Future> futures = [];
     DatabaseEvent event;
+
+    // Getting all the ordered variants
     if (Constants.isDistributor) {
       event = await realTimeDbRef
           .child(Constants.stringDbNodeInventory)
@@ -771,71 +809,83 @@ class MyFirebase {
           .child(userId)
           .once();
     }
+
     DataSnapshot snapshot = event.snapshot;
     if (snapshot.value != null) {
       print("MyFirebase getOrderVariants ${snapshot.value}");
 
       Map<dynamic, dynamic> pd = snapshot.value as Map<dynamic, dynamic>;
+
+      // Grouping variants per product key
       pd.forEach((mKey, value) {
-        value.forEach((key, value) {
-          myMap.addAll({
-            mKey: {key: value}
-          });
+        value.forEach((key, val) {
+          if (!myMap.containsKey(mKey)) {
+            myMap[mKey] = [];
+          }
+          myMap[mKey]!.add({key: val});
         });
       });
-      print("MyFirebase myMap ${myMap}");
-      myMap.forEach((key, value) async {
-        // key will be the product name
-        futures.add(() async {
-          Map<dynamic, dynamic> variantMap = value as Map<dynamic, dynamic>;
-          print(
-              "MyFirebase getOrderVariants variant map keys  ${variantMap.keys.first}");
-          variantName = variantMap.keys.first;
-          print("MyFirebase aaaaa ${variantName}");
-          DatabaseEvent event2;
-          if (Constants.isDistributor) {
-            event2 = await realTimeDbRef
-                .child(Constants.stringDbNodeInventory)
-                .child(Constants.myUserId)
-                .child(key)
-                .child(variantMap.keys.first)
-                .once();
-          } else {
-            event2 = await realTimeDbRef
-                .child(Constants.stringDbNodeInventory)
-                // this is distributors userId
-                .child(userId)
-                .child(key)
-                .child(variantMap.keys.first)
-                .once();
-          }
-          DataSnapshot snapshot = event2.snapshot;
-          if (snapshot.value != null) {
-            print(
-                "MyFirebase getOrderVariants the variant is ${snapshot.value}");
-            Map<dynamic, dynamic> m = snapshot.value as Map;
-            // remove product quantity
-            m.remove('productQuantity');
-            m.addAll({
-              'Ordered Quantity': variantMap.values.first['orderedQuantity'],
-              'Product Name': key,
-              'Variant Name': variantMap.keys.first
-            });
-            print("MyFirebase orderedQuantity is ${m}");
-            productDetails.add(m);
 
-            print(
-                "MyFirebase getOrderVariants final product detials are  ${productDetails}");
-          }
-        }());
+      print("MyFirebase myMap $myMap");
+
+      // Processing each variant entry
+      myMap.forEach((productName, variantList) {
+        for (var variantEntry in variantList) {
+          futures.add(() async {
+            String variantKey = variantEntry.keys.first;
+            var variantData = variantEntry[variantKey];
+
+            print("MyFirebase getOrderedVariants variant map is $variantEntry");
+            print("MyFirebase getOrderVariants variant map keys $variantKey");
+
+            DatabaseEvent event2;
+
+            if (Constants.isDistributor) {
+              event2 = await realTimeDbRef
+                  .child(Constants.stringDbNodeInventory)
+                  .child(Constants.myUserId)
+                  .child(productName)
+                  .child(variantKey)
+                  .once();
+            } else {
+              event2 = await realTimeDbRef
+                  .child(Constants.stringDbNodeInventory)
+                  .child(userId)
+                  .child(productName)
+                  .child(variantKey)
+                  .once();
+            }
+
+            DataSnapshot snapshot = event2.snapshot;
+            if (snapshot.value != null) {
+              print("MyFirebase getOrderVariants the variant is ${snapshot
+                  .value}");
+              Map<dynamic, dynamic> m = snapshot.value as Map;
+              m.remove('productQuantity');
+
+              m.addAll({
+                'Ordered Quantity': variantData['orderedQuantity'],
+                'Status': variantData['status'],
+                'Product Name': productName,
+                'Variant Name': variantKey,
+              });
+
+              print("MyFirebase orderedQuantity is $m");
+              productDetails.add(m);
+              print(
+                  "MyFirebase getOrderVariants productDetails: $productDetails");
+            }
+          }());
+        }
       });
+
       await Future.wait(futures);
     }
-    print(
-        "MyFirebase getOrderVariants final product details are  ${productDetails}");
 
+    print("MyFirebase getOrderVariants final product details: $productDetails");
     return productDetails;
   }
+
 
   static Future<List<UserProfile>> checkMyOrders() async {
     List<String> userIds = [];
@@ -869,13 +919,18 @@ class MyFirebase {
             .once();
         DataSnapshot snapshot = event.snapshot;
         print("MyFirebase userID ss is ${snapshot.value}");
-        final raw = snapshot.value as Map<Object?, Object?>;
-        Map<String, dynamic> userProfile =
-            raw.map((key, value) => MapEntry(key.toString(), value));
-        print("MyFirebase checkMyOrders raw userProfile is ${userProfile}");
-        userProfile.remove('MyFollowing');
-        userProfiles.add(UserProfile.fromJson(userProfile));
-        print("MyuFirebase checkMyOrder added user is  ${userProfiles.first}");
+        if (snapshot.value != null) {
+          final raw = snapshot.value as Map<Object?, Object?>;
+          Map<String, dynamic> userProfile =
+          raw.map((key, value) => MapEntry(key.toString(), value));
+          print("MyFirebase checkMyOrders raw userProfile is ${userProfile}");
+          userProfile.remove('MyFollowing');
+          userProfiles.add(UserProfile.fromJson(userProfile));
+          print(
+              "MyuFirebase checkMyOrder added user is  ${userProfiles.first}");
+        } else {
+          print("snapshot is null");
+        }
       }
     } else {
       print("MyFirebase checkMyOrders snapshot is null");
@@ -884,8 +939,8 @@ class MyFirebase {
     return userProfiles;
   }
 
-  static Future<void> updateProductQuantity(
-      String productName, String variantName, String orderedQuantity) async {
+  static Future<void> updateProductQuantity(String productName,
+      String variantName, String orderedQuantity) async {
     int orderedQ = int.parse(orderedQuantity);
     final pq = realTimeDbRef
         .child(Constants.stringDbNodeInventory)
@@ -926,8 +981,8 @@ class MyFirebase {
         .update({'status': orderStatus});
   }
 
-  static Future<String> checkIfOrderAccepted(
-      String retailersUserId, String productName, String variantName) async {
+  static Future<String> checkIfOrderAccepted(String retailersUserId,
+      String productName, String variantName) async {
     DatabaseEvent event = await realTimeDbRef
         .child(Constants.stringDbNodeInventory)
         .child(Constants.myUserId)
@@ -954,7 +1009,7 @@ class MyFirebase {
 
   static getMyContactsFromDb() async {
     List<String> contacts =
-        Constants.extractPhoneNumbers(await Constants.getAllContacts());
+    Constants.extractPhoneNumbers(await Constants.getAllContacts());
 
     for (String contact in contacts) {
       print("MyFirebase getMyContactsFromDb ${contact}");
@@ -966,8 +1021,7 @@ class MyFirebase {
     }
   }
 
-  static Future<String> getVariantImage(
-      String productName, String userId) async {
+  static Future<void> getVariantImage(String productName, String userId) async {
     print("getVariantImage the product name is ${productName}");
     if (Constants.productNameImageUrl.containsKey(productName)) {
       return Constants.productNameImageUrl[productName];
@@ -981,11 +1035,17 @@ class MyFirebase {
             .child('imageUrl')
             .once();
         DataSnapshot snapshot = event.snapshot;
-        var imageUrl = snapshot.value;
-        Constants.productNameImageUrl.addAll({productName: imageUrl});
-        print(
-            "MyFirebase getVariantImage ${Constants.productNameImageUrl.values}");
-        return Constants.productNameImageUrl[productName];
+        print("MyFirebase getVariantImage  event is ${event}");
+        print("getVariantImage ${snapshot.toString()}");
+        print("getVariantImage ssssssssssvv ${snapshot.value}");
+        if (snapshot.value != null) {
+          var imageUrl = snapshot.value;
+          Constants.productNameImageUrl.addAll({productName: imageUrl});
+          print(
+              "MyFirebase getVariantImage ${Constants.productNameImageUrl
+                  .values}");
+          return Constants.productNameImageUrl[productName];
+        }
       } else {
         // userId will be of distributor
         DatabaseEvent event = await realTimeDbRef
@@ -996,12 +1056,180 @@ class MyFirebase {
             .child('imageUrl')
             .once();
         DataSnapshot snapshot = event.snapshot;
-        var imageUrl = snapshot.value;
-        Constants.productNameImageUrl.addAll({productName: imageUrl});
-        print(
-            "MyFirebase getVariantImage ${Constants.productNameImageUrl.values}");
-        return Constants.productNameImageUrl[productName];
+        if (snapshot.value != null) {
+          var imageUrl = snapshot.value;
+          Constants.productNameImageUrl.addAll({productName: imageUrl});
+          print(
+              "MyFirebase getVariantImage ${Constants.productNameImageUrl
+                  .values}");
+          return Constants.productNameImageUrl[productName];
+        }
       }
     }
+  }
+
+  static saveMyManager(String managerMobileNumber, nameOfTheManager,
+      String previousManagersPhoneNumber) {
+    // remove previous managers phone number from validated numbers
+    if (previousManagersPhoneNumber.isNotEmpty) {
+      realTimeDbRef
+          .child(Constants.stringDbNodeValidatedNumbers)
+          .child(previousManagersPhoneNumber)
+          .remove();
+    }
+    realTimeDbRef
+        .child(Constants.stringDbNodeValidatedNumbers)
+        .child(managerMobileNumber)
+        .set({
+      'name': nameOfTheManager,
+      'isManager': true,
+      'userIdOfMyDistributor': Constants.myUserId
+    });
+
+    //   save manager details in my profile
+    realTimeDbRef
+        .child(Constants.stringDbNodeUsers)
+        .child(Constants.myUserId)
+        .child("MyManager")
+        .update({
+      'phoneNumber': managerMobileNumber,
+      'name': nameOfTheManager,
+      'userIdOfMyDistributor': Constants.myUserId
+    });
+  }
+
+  static Future<Map<dynamic, dynamic>> getMyManager() async {
+    Map<dynamic, dynamic> managerMap = {};
+    DatabaseEvent event = await realTimeDbRef
+        .child(Constants.stringDbNodeUsers)
+        .child(Constants.myUserId)
+        .child(Constants.stringDbNodeMyManager)
+        .once();
+    DataSnapshot snapshot = event.snapshot;
+    if (snapshot.value != null) {
+      print("MyFirebase getMyManager snapshot ${snapshot.value}");
+      return managerMap = snapshot.value as Map<dynamic, dynamic>;
+    } else {
+      return managerMap;
+    }
+  }
+
+  static deleteManager(String managerPhoneNUmber) {
+    realTimeDbRef
+        .child(Constants.stringDbNodeUsers)
+        .child(Constants.myUserId)
+        .child("MyManager")
+        .remove();
+
+    if (managerPhoneNUmber.isNotEmpty) {
+      realTimeDbRef
+          .child(Constants.stringDbNodeValidatedNumbers)
+          .child(managerPhoneNUmber)
+          .remove();
+    }
+  }
+
+  static Future<List<UserProfile>> checkAndRemoveIfAlreadyFollowing(
+      List<UserProfile> distributors) async {
+    List<String> userIds = [];
+    DatabaseEvent event = await realTimeDbRef
+        .child(Constants.stringDbNodeUsers)
+        .child(Constants.myUserId)
+        .child("MyFollowing")
+        .once();
+    DataSnapshot snapshot = event.snapshot;
+    print(
+        "MyFirebase checkAndRemoveIfAlreadyFollowing snapshot is ${snapshot
+            .value}");
+    if (snapshot.value != null) {
+      Map<dynamic, dynamic> map = snapshot.value as Map<dynamic, dynamic>;
+      userIds.addAll(map.keys.map((key) => key.toString()));
+      print("the keys areb ${map.keys}");
+      distributors
+          .removeWhere((userProfile) => userIds.contains(userProfile.userId));
+    }
+    return distributors;
+  }
+
+  static checkFollowRequest() async {
+    DatabaseEvent event = await realTimeDbRef
+        .child(Constants.stringDbNodeUsers)
+        .child(Constants.myUserId)
+        .child("MyFollowing")
+        .once();
+    DataSnapshot snapshot = event.snapshot;
+    print("asasasas ${snapshot.value}");
+  }
+
+  static Future<String> getUserIdOfMyDistributor() async {
+    DatabaseEvent event = await realTimeDbRef
+        .child(Constants.stringDbNodeValidatedNumbers)
+        .child(phoneNumber ?? "")
+        .child("userIdOfMyDistributor")
+        .once();
+
+    DataSnapshot snapshot = event.snapshot;
+    if (snapshot.value != null) {
+      print("MyFirebase gteUserIdOfMyDistributor ${snapshot.value}");
+      return snapshot.value.toString();
+    } else {
+      return "";
+    }
+  }
+
+  static deleteTheVariantWhoseAllTheFeaturesAreHyphen() {
+    //   todo
+  }
+
+  static Future<Map<dynamic, dynamic>> getProductImages(
+      List<String> productNames, String userId) async {
+    // the user id will be of distributor if the user is a retailer and vice versa
+    List<String> productImages = [];
+    Map<dynamic, dynamic> productImageMap = {};
+    String _userId;
+    if (Constants.isDistributor) {
+      _userId = Constants.myUserId;
+    } else {
+      _userId = userId;
+    }
+    for (var p in productNames) {
+      DatabaseEvent event = await realTimeDbRef
+          .child(
+          Constants.stringDbNodeInventory)
+          .child(_userId)
+          .child('Data')
+          .child(p)
+          .child('imageUrl')
+          .once();
+      DataSnapshot snapshot = event.snapshot;
+      if (snapshot.value != null) {
+        productImages.add(snapshot.value as String);
+        print("MyFirebase getProductImages ${productImages}");
+        productImageMap.addAll({p: snapshot.value});
+        print(
+            "MyFirebase getProductImages productImageMap is ${productImageMap}");
+      } else {
+        print("MyFirebase getProductImages snapshot is null");
+      }
+    }
+    return productImageMap;
+  }
+
+  static deleteOrder(String userId, String variantName, String productName) {
+    // as per retialer
+    realTimeDbRef
+        .child(Constants.stringDbNodeInventory)
+        .child(
+        Constants.myUserId)
+        .child("OrdersPlaced")
+        .child(userId)
+        .child(productName)
+        .child(variantName)
+        .remove();
+
+    //   as per retailer in distributors id
+    realTimeDbRef.child(Constants.stringDbNodeInventory).child(userId).child(
+        "MyOrders").child(Constants.myUserId).child(productName).child(
+        variantName).remove();
   }
 }

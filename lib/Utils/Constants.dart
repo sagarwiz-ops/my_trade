@@ -39,11 +39,16 @@ class Constants {
   static String? blocStringGetOrders = "getOrders";
   static String? blocStringGetMyProducts = "getMyProducts";
   static String? blocStringGetMyProfileData = "getMyProfileData";
+  static String stringDbNodeMyManager = "MyManager";
+  static String stringTotalNumberOfOrders = "totalNumberOfOrders";
   static bool isDistributor = false;
   static bool hasJustLoggedIn = false;
   static bool isFirstRunTransactionForLogin = false;
   static Map<String, dynamic> productNameImageUrl = {};
   static late double  gResponsiveFontSize;
+  static bool isManager = false;
+  static String sharedPrefStringDistributorsUserIdForManager = "DistributorsUserIdForManager";
+  static bool traderCreatedForTheFirstTime = false;
 
 
   // limiting the size to 200 kb
@@ -248,6 +253,25 @@ class Constants {
       return false;
     }
     return false;
+  }
+
+  static Future<bool> launchPhonePe(String amt, BuildContext context) async {
+    final String upiId = "rahulramani070@oksbi"; // Replace with real UPI ID
+    final String name = "Your Name";
+    final String amount = amt;
+    final String note = "Payment for order";
+
+    final Uri uri = Uri.parse(
+        "upi://pay?pa=$upiId&pn=$name&tn=$note&am=$amount&cu=INR"
+    );
+
+   if(await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+      return true;
+    } else {
+      Constants.showAToast("Unable to launch , Please check if the UPI app is installed", context);
+      return false;
+    }
   }
 
 

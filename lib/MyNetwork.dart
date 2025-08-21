@@ -30,6 +30,7 @@ class _MyNetworkState extends State<MyNetwork> {
   List<UserProfile> filteredItems = [];
   bool _isSearching = false;
   TextEditingController _searchController = TextEditingController();
+  String followStatus = "Follow";
 
   @override
   initState() {
@@ -116,7 +117,8 @@ class _MyNetworkState extends State<MyNetwork> {
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
-              context.read<DataBloc>().add(FetchData(Constants.blocStringGetOrders, Constants.myUserId));
+              context.read<DataBloc>().add(
+                  FetchData(Constants.blocStringGetOrders, Constants.myUserId));
               Navigator.pop(context);
             },
             icon: Icon(
@@ -181,6 +183,7 @@ class _MyNetworkState extends State<MyNetwork> {
   }
 
   Widget showDistributors(List<UserProfile>? userProfiles) {
+
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Column(
@@ -220,10 +223,11 @@ class _MyNetworkState extends State<MyNetwork> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 ClipRRect(
-                                    child: userProfiles[index].nameOfTheShop !=
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: userProfiles[index].profileImageUrl !=
                                             null
                                         ? userProfiles[index]
-                                                .nameOfTheShop!
+                                                .profileImageUrl!
                                                 .isNotEmpty
                                             ? CachedNetworkImage(
                                                 height: 60,
@@ -235,13 +239,15 @@ class _MyNetworkState extends State<MyNetwork> {
                                                 fit: BoxFit.cover,
                                               )
                                             : Image.asset(
-                                                height: 50,
-                                                width: 50,
-                                                'assets/images/retailer.png')
+                                      fit: BoxFit.cover,
+                                                height: 60,
+                                                width: 60,
+                                                'assets/images/no_image.png')
                                         : Image.asset(
-                                            height: 50,
-                                            width: 50,
-                                            'assets/images/retailer.png')),
+                                        fit: BoxFit.cover,
+                                            height: 60,
+                                            width: 60,
+                                            'assets/images/no_image.png')),
                                 Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -274,9 +280,13 @@ class _MyNetworkState extends State<MyNetwork> {
                                                   .userId
                                                   .toString());
 
-                                          setState(() {});
+                                          if(followStatus == "Follow"){
+                                            setState(() {
+                                              followStatus = "Requested";
+                                            });
+                                          }
                                         },
-                                        child: Text("Follow"))
+                                        child: Text(followStatus, style: TextStyle(color: AppColors.lightGray),))
                                   ],
                                 ),
                               ],
@@ -329,6 +339,7 @@ class _MyNetworkState extends State<MyNetwork> {
                                 children: [
                                   myDistributors[index].profileImageUrl != null
                                       ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
                                           child: myDistributors[index]
                                                   .profileImageUrl!
                                                   .isEmpty
@@ -336,7 +347,7 @@ class _MyNetworkState extends State<MyNetwork> {
                                                   fit: BoxFit.cover,
                                                   width: 50,
                                                   height: 50,
-                                                  'assets/images/retailer.png')
+                                                  'assets/images/no_image.png')
                                               : CachedNetworkImage(
                                                   height: 60,
                                                   width: 60,
@@ -351,11 +362,12 @@ class _MyNetworkState extends State<MyNetwork> {
                                       :
                                       // if profile image is null
                                       ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
                                           child: Image.asset(
                                               fit: BoxFit.cover,
                                               width: 50,
                                               height: 50,
-                                              'assets/images/retailer.png'),
+                                              'assets/images/no_image.png'),
                                         ),
                                   SizedBox(
                                     width: 15,
@@ -503,7 +515,7 @@ class _MyNetworkState extends State<MyNetwork> {
                         return Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),
-                            color: AppColors.steelBlue.withOpacity(0.5),
+                            color: AppColors.steelBlue.withOpacity(0.7),
                           ),
                           margin: EdgeInsets.all(10),
                           padding: EdgeInsets.all(10),
@@ -511,10 +523,22 @@ class _MyNetworkState extends State<MyNetwork> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               ClipRRect(
-                                child: Image.asset(
-                                    height: 80,
-                                    width: 80,
-                                    'assets/images/retailer.png'),
+                                  borderRadius: BorderRadius.circular(10),
+                                child: userProfiles[index].profileImageUrl != null
+                          ? userProfiles[index].profileImageUrl!.isNotEmpty ?
+                                    Image.network(userProfiles[index].profileImageUrl!, height: 70, width: 70, fit: BoxFit.cover,)
+                                :
+                                Image.asset(
+                                    height: 70,
+                                    width: 70,
+                                    'assets/images/no_image.png')
+                                    :
+                        Image.asset(
+                        height: 70,
+                        width: 70,
+                        'assets/images/no_image.png')
+
+
                               ),
                               SizedBox(
                                 width: 25,
@@ -529,7 +553,7 @@ class _MyNetworkState extends State<MyNetwork> {
                                           .nameOfTheShop
                                           .toString(),
                                       style: TextStyle(
-                                          fontWeight: FontWeight.bold),
+                                          fontWeight: FontWeight.bold, color: AppColors.lightGray),
                                     ),
                                     SizedBox(
                                       height: 4,
@@ -539,7 +563,7 @@ class _MyNetworkState extends State<MyNetwork> {
                                           .nameOfTheOwner
                                           .toString(),
                                       style: TextStyle(
-                                          fontWeight: FontWeight.bold),
+                                          fontWeight: FontWeight.bold, color: AppColors.lightGray),
                                     ),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.end,
@@ -562,9 +586,17 @@ class _MyNetworkState extends State<MyNetwork> {
                                                 userProfiles.removeAt(index);
                                               });
                                             },
-                                            child: Text(Constants.isDistributor
-                                                ? "Accept"
-                                                : "Follow"))
+                                            child: InkWell(
+                                              onTap: () {
+
+                                              },
+                                              child: Text(
+                                                "Accept",
+                                                style: TextStyle(
+                                                  color: AppColors.lightGray,
+                                                ),
+                                              ),
+                                            ))
                                       ],
                                     ),
                                   ],
@@ -605,6 +637,7 @@ class _MyNetworkState extends State<MyNetwork> {
                                     ? followersList[index].profileImageUrl !=
                                             null
                                         ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
                                             child: followersList[index]
                                                     .profileImageUrl!
                                                     .isEmpty
@@ -612,7 +645,7 @@ class _MyNetworkState extends State<MyNetwork> {
                                                     fit: BoxFit.cover,
                                                     width: 60,
                                                     height: 60,
-                                                    'assets/images/retailer.png')
+                                                    'assets/images/no_image.png')
                                                 : Image.network(
                                                     fit: BoxFit.cover,
                                                     width: 60,
@@ -623,15 +656,17 @@ class _MyNetworkState extends State<MyNetwork> {
                                         :
                                         // if profile image is null
                                         ClipRRect(
+                                          borderRadius: BorderRadius.circular(10),
                                             child: Image.asset(
                                                 fit: BoxFit.cover,
                                                 width: 60,
                                                 height: 60,
-                                                'assets/images/retailer.png'),
+                                                'assets/images/no_image.png'),
                                           )
                                     : filteredItems[index].profileImageUrl !=
                                             null
                                         ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
                                             child: filteredItems[index]
                                                     .profileImageUrl!
                                                     .isEmpty
@@ -639,7 +674,7 @@ class _MyNetworkState extends State<MyNetwork> {
                                                     fit: BoxFit.cover,
                                                     width: 60,
                                                     height: 60,
-                                                    'assets/images/retailer.png')
+                                                    'assets/images/no_image.png')
                                                 : Image.network(
                                                     fit: BoxFit.cover,
                                                     width: 60,
@@ -650,11 +685,12 @@ class _MyNetworkState extends State<MyNetwork> {
                                         :
                                         // if profile image is null
                                         ClipRRect(
+                                          borderRadius: BorderRadius.circular(10),
                                             child: Image.asset(
                                                 fit: BoxFit.cover,
                                                 width: 60,
                                                 height: 60,
-                                                'assets/images/retailer.png'),
+                                                'assets/images/no_image.png'),
                                           ),
                                 SizedBox(
                                   width: 20,
