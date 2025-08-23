@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_trade/Firebase/MyFirebase.dart';
 import 'package:my_trade/Utils/AppColors.dart';
@@ -21,6 +22,12 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   aboutUser = await  SharedPreferences.getInstance();
   await Firebase.initializeApp();
+
+  // Lock orientation to portrait
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
 
   // enable offline persistence for Firebase Realtime Database
