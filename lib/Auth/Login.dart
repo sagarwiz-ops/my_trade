@@ -170,10 +170,10 @@ class _PhoneAuthState extends State<PhoneAuth> {
         centerTitle: true,
       ),
       body: SafeArea(
-          child: Container(
-        padding: EdgeInsets.all(20),
-        child: Expanded(
-          child: Column(
+          child: SingleChildScrollView(
+            child: Container(
+                    padding: EdgeInsets.all(20),
+                    child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
@@ -242,9 +242,9 @@ class _PhoneAuthState extends State<PhoneAuth> {
                 ),
               )
             ],
-          ),
-        ),
-      )),
+                    ),
+                  ),
+          )),
     );
   }
 }
@@ -389,7 +389,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
                 height: 4,
               ),
               Row(children: [
-                Expanded(
+                SingleChildScrollView(
                   child: Container(
                     padding: EdgeInsets.all(14),
                     child: TextButton(
@@ -417,7 +417,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
                               Constants.hasJustLoggedIn = true;
                               print(
                                   "Login after successfully signing in mobile number is  ${_mobileNumberController.text}");
-
+                  
                               if (await MyFirebase.checkIfTheUserIsValidated(
                                   "+91${_mobileNumberController.text}")) {
                                distributorsUserIdForManager =  await MyFirebase.getUserIdOfMyDistributor();
@@ -425,7 +425,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
                                  aboutUser.setString(Constants.sharedPrefStringDistributorsUserIdForManager, distributorsUserIdForManager);
                                  aboutUser.setBool("isManager", true);
                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Home()));
-
+                  
                                }else{
                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Home()));
                                }
@@ -437,7 +437,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
                                             _mobileNumberController.text)));
                               }
                             });
-
+                  
                             // Navigator.pop(context);
                           } on FirebaseAuthException catch (fae) {
                             if (fae.code == 'invalid-verification-code') {
@@ -480,7 +480,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
                 ),
               ]),
               Row(children: [
-                Expanded(
+                SingleChildScrollView(
                   child: Container(
                     padding: EdgeInsets.all(14),
                     child: TextButton(
@@ -520,7 +520,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
                                       (String verificationId) {});
                             }
                             _listenForCode();
-
+                  
                             print("otp resent");
                           } else if (_secondsRemaining > 0) {
                             //   if 30 secs haven't elapsed

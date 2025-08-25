@@ -298,193 +298,194 @@ class _MyNetworkState extends State<MyNetwork> {
         SizedBox(
           height: 10,
         ),
-        Expanded(
-            child: !distributorsReceived
-                ? Container(
-                    margin: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                        border:
-                            Border.all(color: AppColors.greyMedium, width: 2)),
-                    child: Container(
-                      child: Text("No Distributors"),
-                    ),
-                  )
-                : Container(
-                    margin: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                        border:
-                            Border.all(color: AppColors.greyMedium, width: 2)),
-                    child: ListView.builder(
-                        itemCount: myDistributors.length,
-                        itemBuilder: (context, index) {
-                          return InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => ShowProducts(
-                                          myDistributors[index].nameOfTheShop ??
-                                              "",
-                                          myDistributors[index].userId ?? "")));
-                            },
-                            child: Container(
-                              padding: EdgeInsets.all(8),
-                              margin: EdgeInsets.all(10),
-                              decoration: BoxDecoration(
+        !distributorsReceived
+            ? SingleChildScrollView(
+              child: Container(
+                  margin: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                      border:
+                          Border.all(color: AppColors.greyMedium, width: 2)),
+                  child: Container(
+                    child: Text("No Distributors"),
+                  ),
+                ),
+            )
+            : Container(
+                margin: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    border:
+                        Border.all(color: AppColors.greyMedium, width: 2)),
+                child: ListView.builder(
+                    itemCount: myDistributors.length,
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ShowProducts(
+                                      myDistributors[index].nameOfTheShop ??
+                                          "",
+                                      myDistributors[index].userId ?? "")));
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(8),
+                          margin: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: AppColors.steelBlue.withOpacity(0.8),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              myDistributors[index].profileImageUrl != null
+                                  ? ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
-                                color: AppColors.steelBlue.withOpacity(0.8),
-                              ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  myDistributors[index].profileImageUrl != null
-                                      ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                          child: myDistributors[index]
-                                                  .profileImageUrl!
-                                                  .isEmpty
-                                              ? Image.asset(
-                                                  fit: BoxFit.cover,
-                                                  width: 50,
-                                                  height: 50,
-                                                  'assets/images/no_image.png')
-                                              : CachedNetworkImage(
-                                                  height: 60,
-                                                  width: 60,
-                                                  imageUrl:
-                                                      myDistributors[index]
-                                                          .profileImageUrl!,
-                                                  cacheManager:
-                                                      CustomCacheManager(),
-                                                  fit: BoxFit.cover,
-                                                ),
-                                        )
-                                      :
-                                      // if profile image is null
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(10),
-                                          child: Image.asset(
+                                      child: myDistributors[index]
+                                              .profileImageUrl!
+                                              .isEmpty
+                                          ? Image.asset(
                                               fit: BoxFit.cover,
                                               width: 50,
                                               height: 50,
-                                              'assets/images/no_image.png'),
-                                        ),
-                                  SizedBox(
-                                    width: 15,
+                                              'assets/images/no_image.png')
+                                          : CachedNetworkImage(
+                                              height: 60,
+                                              width: 60,
+                                              imageUrl:
+                                                  myDistributors[index]
+                                                      .profileImageUrl!,
+                                              cacheManager:
+                                                  CustomCacheManager(),
+                                              fit: BoxFit.cover,
+                                            ),
+                                    )
+                                  :
+                                  // if profile image is null
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                      child: Image.asset(
+                                          fit: BoxFit.cover,
+                                          width: 50,
+                                          height: 50,
+                                          'assets/images/no_image.png'),
+                                    ),
+                              SizedBox(
+                                width: 15,
+                              ),
+                              Expanded(
+                                  child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    myDistributors[index].nameOfTheShop ??
+                                        "",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.lightGray,
+                                        fontSize: 16),
                                   ),
-                                  Expanded(
-                                      child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                  Text(
+                                      myDistributors[index]
+                                              .nameOfTheOwner ??
+                                          "",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.lightGray,
+                                          fontSize: 14)),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.end,
                                     children: [
-                                      Text(
-                                        myDistributors[index].nameOfTheShop ??
-                                            "",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: AppColors.lightGray,
-                                            fontSize: 16),
-                                      ),
-                                      Text(
-                                          myDistributors[index]
-                                                  .nameOfTheOwner ??
-                                              "",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColors.lightGray,
-                                              fontSize: 14)),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          IconButton(
-                                              onPressed: () {
-                                                _isSearching
+                                      IconButton(
+                                          onPressed: () {
+                                            _isSearching
+                                                ? filteredItems[index]
+                                                            .phoneNumber !=
+                                                        null
                                                     ? filteredItems[index]
-                                                                .phoneNumber !=
-                                                            null
-                                                        ? filteredItems[index]
-                                                                .phoneNumber!
-                                                                .isNotEmpty
-                                                            ? Constants.makePhoneCall(filteredItems[index]
-                                                                .phoneNumber!)
-                                                            : Constants.showAToast(
-                                                                "No Phone Number",
-                                                                context)
+                                                            .phoneNumber!
+                                                            .isNotEmpty
+                                                        ? Constants.makePhoneCall(filteredItems[index]
+                                                            .phoneNumber!)
                                                         : Constants.showAToast(
                                                             "No Phone Number",
                                                             context)
-                                                    : myDistributors[index]
-                                                                .phoneNumber !=
-                                                            null
-                                                        ? myDistributors[index]
-                                                                .phoneNumber!
-                                                                .isNotEmpty
-                                                            ? Constants.makePhoneCall(
-                                                                myDistributors[index]
-                                                                    .phoneNumber!)
-                                                            : Constants.showAToast(
-                                                                "No Phone Number",
-                                                                context)
+                                                    : Constants.showAToast(
+                                                        "No Phone Number",
+                                                        context)
+                                                : myDistributors[index]
+                                                            .phoneNumber !=
+                                                        null
+                                                    ? myDistributors[index]
+                                                            .phoneNumber!
+                                                            .isNotEmpty
+                                                        ? Constants.makePhoneCall(
+                                                            myDistributors[index]
+                                                                .phoneNumber!)
                                                         : Constants.showAToast(
                                                             "No Phone Number",
-                                                            context);
-                                              },
-                                              icon: Icon(
-                                                Icons.call,
-                                                color: AppColors.charcoal,
-                                              )),
-                                          InkWell(
-                                            onTap: () {
-                                              _isSearching
+                                                            context)
+                                                    : Constants.showAToast(
+                                                        "No Phone Number",
+                                                        context);
+                                          },
+                                          icon: Icon(
+                                            Icons.call,
+                                            color: AppColors.charcoal,
+                                          )),
+                                      InkWell(
+                                        onTap: () {
+                                          _isSearching
+                                              ? filteredItems[index]
+                                                          .phoneNumber !=
+                                                      null
                                                   ? filteredItems[index]
-                                                              .phoneNumber !=
-                                                          null
-                                                      ? filteredItems[index]
-                                                              .phoneNumber!
-                                                              .isNotEmpty
-                                                          ? Constants.launchWhatsApp(
-                                                              filteredItems[index]
-                                                                  .phoneNumber!,
-                                                              "Hello")
-                                                          : Constants.showAToast(
-                                                              "No Phone Number",
-                                                              context)
+                                                          .phoneNumber!
+                                                          .isNotEmpty
+                                                      ? Constants.launchWhatsApp(
+                                                          filteredItems[index]
+                                                              .phoneNumber!,
+                                                          "Hello")
                                                       : Constants.showAToast(
                                                           "No Phone Number",
                                                           context)
-                                                  : myDistributors[index]
-                                                              .phoneNumber !=
-                                                          null
-                                                      ? myDistributors[index]
-                                                              .phoneNumber!
-                                                              .isNotEmpty
-                                                          ? Constants.launchWhatsApp(
-                                                              myDistributors[index]
-                                                                  .phoneNumber!,
-                                                              "Hello")
-                                                          : Constants.showAToast(
-                                                              "No Phone Number",
-                                                              context)
+                                                  : Constants.showAToast(
+                                                      "No Phone Number",
+                                                      context)
+                                              : myDistributors[index]
+                                                          .phoneNumber !=
+                                                      null
+                                                  ? myDistributors[index]
+                                                          .phoneNumber!
+                                                          .isNotEmpty
+                                                      ? Constants.launchWhatsApp(
+                                                          myDistributors[index]
+                                                              .phoneNumber!,
+                                                          "Hello")
                                                       : Constants.showAToast(
                                                           "No Phone Number",
-                                                          context);
-                                            },
-                                            child: FaIcon(
-                                              FontAwesomeIcons.whatsapp,
-                                              color: AppColors.whatsAppGreen,
-                                            ),
-                                          ),
-                                        ],
-                                      )
+                                                          context)
+                                                  : Constants.showAToast(
+                                                      "No Phone Number",
+                                                      context);
+                                        },
+                                        child: FaIcon(
+                                          FontAwesomeIcons.whatsapp,
+                                          color: AppColors.whatsAppGreen,
+                                        ),
+                                      ),
                                     ],
-                                  ))
+                                  )
                                 ],
-                              ),
-                            ),
-                          );
-                        }),
-                  ))
+                              ))
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+              )
       ],
     );
   }
@@ -610,164 +611,127 @@ class _MyNetworkState extends State<MyNetwork> {
         // SizedBox(
         //   height: 8,
         // ),
-        Expanded(
-            child: followersReceived
-                ? Container(
-                    margin: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                        border:
-                            Border.all(color: AppColors.greyMedium, width: 2)),
-                    child: ListView.builder(
-                        itemCount: _isSearching
-                            ? filteredItems.length
-                            : followersList.length,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            padding: EdgeInsets.all(8),
-                            margin: EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              color: AppColors.steelBlue.withOpacity(0.85),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                !_isSearching
-                                    ? followersList[index].profileImageUrl !=
-                                            null
-                                        ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                            child: followersList[index]
-                                                    .profileImageUrl!
-                                                    .isEmpty
-                                                ? Image.asset(
-                                                    fit: BoxFit.cover,
-                                                    width: 60,
-                                                    height: 60,
-                                                    'assets/images/no_image.png')
-                                                : Image.network(
-                                                    fit: BoxFit.cover,
-                                                    width: 60,
-                                                    height: 60,
-                                                    followersList[index]
-                                                        .profileImageUrl!),
-                                          )
-                                        :
-                                        // if profile image is null
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(10),
-                                            child: Image.asset(
-                                                fit: BoxFit.cover,
-                                                width: 60,
-                                                height: 60,
-                                                'assets/images/no_image.png'),
-                                          )
-                                    : filteredItems[index].profileImageUrl !=
-                                            null
-                                        ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                            child: filteredItems[index]
-                                                    .profileImageUrl!
-                                                    .isEmpty
-                                                ? Image.asset(
-                                                    fit: BoxFit.cover,
-                                                    width: 60,
-                                                    height: 60,
-                                                    'assets/images/no_image.png')
-                                                : Image.network(
-                                                    fit: BoxFit.cover,
-                                                    width: 60,
-                                                    height: 60,
-                                                    filteredItems[index]
-                                                        .profileImageUrl!),
-                                          )
-                                        :
-                                        // if profile image is null
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(10),
-                                            child: Image.asset(
-                                                fit: BoxFit.cover,
-                                                width: 60,
-                                                height: 60,
-                                                'assets/images/no_image.png'),
-                                          ),
-                                SizedBox(
-                                  width: 20,
-                                ),
-                                Expanded(
-                                    child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      _isSearching
-                                          ? filteredItems[index]
-                                                  .nameOfTheShop ??
-                                              ""
-                                          : followersList[index]
-                                                  .nameOfTheShop ??
-                                              "",
-                                      style: TextStyle(
-                                          color: AppColors.lightGray,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18),
-                                    ),
-                                    Text(
-                                      _isSearching
-                                          ? filteredItems[index]
-                                                  .nameOfTheOwner ??
-                                              ""
-                                          : followersList[index]
-                                                  .nameOfTheOwner ??
-                                              "",
-                                      style: TextStyle(
-                                          color: AppColors.lightGray,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18),
-                                    ),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        IconButton(
-                                            onPressed: () {
-                                              _isSearching
-                                                  ? filteredItems[index]
-                                                              .phoneNumber !=
-                                                          null
-                                                      ? filteredItems[index]
-                                                              .phoneNumber!
-                                                              .isNotEmpty
-                                                          ? Constants.makePhoneCall(
-                                                              filteredItems[index]
-                                                                  .phoneNumber!)
-                                                          : Constants.showAToast(
-                                                              "No Phone Number",
-                                                              context)
-                                                      : Constants.showAToast(
-                                                          "No Phone Number", context)
-                                                  : followersList[index]
-                                                              .phoneNumber !=
-                                                          null
-                                                      ? followersList[index]
-                                                              .phoneNumber!
-                                                              .isNotEmpty
-                                                          ? Constants.makePhoneCall(
-                                                              followersList[index]
-                                                                  .phoneNumber!)
-                                                          : Constants.showAToast(
-                                                              "No Phone Number",
-                                                              context)
-                                                      : Constants.showAToast(
-                                                          "No Phone Number",
-                                                          context);
-                                            },
-                                            icon: Icon(
-                                              Icons.call,
-                                              color: AppColors.charcoal,
-                                            )),
-                                        InkWell(
-                                          onTap: () {
+        followersReceived
+            ? SingleChildScrollView(
+              child: Container(
+                  margin: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                      border:
+                          Border.all(color: AppColors.greyMedium, width: 2)),
+                  child: ListView.builder(
+                      itemCount: _isSearching
+                          ? filteredItems.length
+                          : followersList.length,
+                      itemBuilder: (context, index) {
+                        return Container(
+                          padding: EdgeInsets.all(8),
+                          margin: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: AppColors.steelBlue.withOpacity(0.85),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              !_isSearching
+                                  ? followersList[index].profileImageUrl !=
+                                          null
+                                      ? ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                          child: followersList[index]
+                                                  .profileImageUrl!
+                                                  .isEmpty
+                                              ? Image.asset(
+                                                  fit: BoxFit.cover,
+                                                  width: 60,
+                                                  height: 60,
+                                                  'assets/images/no_image.png')
+                                              : Image.network(
+                                                  fit: BoxFit.cover,
+                                                  width: 60,
+                                                  height: 60,
+                                                  followersList[index]
+                                                      .profileImageUrl!),
+                                        )
+                                      :
+                                      // if profile image is null
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                          child: Image.asset(
+                                              fit: BoxFit.cover,
+                                              width: 60,
+                                              height: 60,
+                                              'assets/images/no_image.png'),
+                                        )
+                                  : filteredItems[index].profileImageUrl !=
+                                          null
+                                      ? ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                          child: filteredItems[index]
+                                                  .profileImageUrl!
+                                                  .isEmpty
+                                              ? Image.asset(
+                                                  fit: BoxFit.cover,
+                                                  width: 60,
+                                                  height: 60,
+                                                  'assets/images/no_image.png')
+                                              : Image.network(
+                                                  fit: BoxFit.cover,
+                                                  width: 60,
+                                                  height: 60,
+                                                  filteredItems[index]
+                                                      .profileImageUrl!),
+                                        )
+                                      :
+                                      // if profile image is null
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                          child: Image.asset(
+                                              fit: BoxFit.cover,
+                                              width: 60,
+                                              height: 60,
+                                              'assets/images/no_image.png'),
+                                        ),
+                              SizedBox(
+                                width: 20,
+                              ),
+                              Expanded(
+                                  child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    _isSearching
+                                        ? filteredItems[index]
+                                                .nameOfTheShop ??
+                                            ""
+                                        : followersList[index]
+                                                .nameOfTheShop ??
+                                            "",
+                                    style: TextStyle(
+                                        color: AppColors.lightGray,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18),
+                                  ),
+                                  Text(
+                                    _isSearching
+                                        ? filteredItems[index]
+                                                .nameOfTheOwner ??
+                                            ""
+                                        : followersList[index]
+                                                .nameOfTheOwner ??
+                                            "",
+                                    style: TextStyle(
+                                        color: AppColors.lightGray,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      IconButton(
+                                          onPressed: () {
                                             _isSearching
                                                 ? filteredItems[index]
                                                             .phoneNumber !=
@@ -775,26 +739,23 @@ class _MyNetworkState extends State<MyNetwork> {
                                                     ? filteredItems[index]
                                                             .phoneNumber!
                                                             .isNotEmpty
-                                                        ? Constants.launchWhatsApp(
+                                                        ? Constants.makePhoneCall(
                                                             filteredItems[index]
-                                                                .phoneNumber!,
-                                                            "Hello")
+                                                                .phoneNumber!)
                                                         : Constants.showAToast(
                                                             "No Phone Number",
                                                             context)
                                                     : Constants.showAToast(
-                                                        "No Phone Number",
-                                                        context)
+                                                        "No Phone Number", context)
                                                 : followersList[index]
                                                             .phoneNumber !=
                                                         null
                                                     ? followersList[index]
                                                             .phoneNumber!
                                                             .isNotEmpty
-                                                        ? Constants.launchWhatsApp(
+                                                        ? Constants.makePhoneCall(
                                                             followersList[index]
-                                                                .phoneNumber!,
-                                                            "Hello")
+                                                                .phoneNumber!)
                                                         : Constants.showAToast(
                                                             "No Phone Number",
                                                             context)
@@ -802,24 +763,65 @@ class _MyNetworkState extends State<MyNetwork> {
                                                         "No Phone Number",
                                                         context);
                                           },
-                                          child: FaIcon(
-                                            FontAwesomeIcons.whatsapp,
-                                            color: AppColors.whatsAppGreen,
-                                          ),
+                                          icon: Icon(
+                                            Icons.call,
+                                            color: AppColors.charcoal,
+                                          )),
+                                      InkWell(
+                                        onTap: () {
+                                          _isSearching
+                                              ? filteredItems[index]
+                                                          .phoneNumber !=
+                                                      null
+                                                  ? filteredItems[index]
+                                                          .phoneNumber!
+                                                          .isNotEmpty
+                                                      ? Constants.launchWhatsApp(
+                                                          filteredItems[index]
+                                                              .phoneNumber!,
+                                                          "Hello")
+                                                      : Constants.showAToast(
+                                                          "No Phone Number",
+                                                          context)
+                                                  : Constants.showAToast(
+                                                      "No Phone Number",
+                                                      context)
+                                              : followersList[index]
+                                                          .phoneNumber !=
+                                                      null
+                                                  ? followersList[index]
+                                                          .phoneNumber!
+                                                          .isNotEmpty
+                                                      ? Constants.launchWhatsApp(
+                                                          followersList[index]
+                                                              .phoneNumber!,
+                                                          "Hello")
+                                                      : Constants.showAToast(
+                                                          "No Phone Number",
+                                                          context)
+                                                  : Constants.showAToast(
+                                                      "No Phone Number",
+                                                      context);
+                                        },
+                                        child: FaIcon(
+                                          FontAwesomeIcons.whatsapp,
+                                          color: AppColors.whatsAppGreen,
                                         ),
-                                      ],
-                                    )
-                                  ],
-                                ))
-                              ],
-                            ),
-                          );
-                        }))
-                : Container(
-                    child: Center(
-                      child: Text("No Followers"),
-                    ),
-                  ))
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ))
+                            ],
+                          ),
+                        );
+                      })),
+            )
+            : Container(
+                child: Center(
+                  child: Text("No Followers"),
+                ),
+              )
       ],
     );
   }
